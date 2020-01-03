@@ -1,36 +1,40 @@
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import datamodel.operations.Operation;
+import datamodel.primitives.Vectorclock;
+import datamodel.primitives.tree.Tree;
+
+import java.util.*;
 
 public class Main {
 
+
     public static void main(String[] args) {
+        int client_id_1 = 1;
+        int client_id_2 = 2;
+        int object_id = 0;
 
-        TreeMap<String, Double> treeMap=new TreeMap<>();
+        Vectorclock vectorclock = new Vectorclock();
+        Operation op1 = new Operation(vectorclock.increment(client_id_1), client_id_1, object_id, "0", null);
 
-        treeMap.put("Paradise Lost", 23.56);
-        treeMap.put("Golden Treasury", 12.47);
-        treeMap.put("Moon and the Sixpence", 65.28);
-        treeMap.put("Holinshed", 7.68);
-        treeMap.put("Ancient Mariner", 45.36);
+        Tree tree1 = new Tree(op1);
 
-        printAll(treeMap);
+        Tree tree2 = new Tree(op1);
 
-        // Keys cannot be duplicates. This will not be stored.
-        treeMap.put("Paradise Lost", 23.56);
-        printAll(treeMap);
+        List<Vectorclock> precedingOperationVectorclocks = new ArrayList<>();
+        precedingOperationVectorclocks.add(vectorclock);
+        Operation op11 = new Operation(vectorclock.incrementFrom(client_id_1), client_id_1, object_id, "11", precedingOperationVectorclocks);
+        tree1.createNode(op11);
+        tree1.updateTreeState();
 
-        // Values may be duplicates. This will be stored.
-        treeMap.put("Paradise Regained", 23.56);
-        printAll(treeMap);
+        Operation op2 = new Operation(vectorclock.incrementFrom(client_id_2), client_id_2, object_id, "21", precedingOperationVectorclocks);
+        tree1.addNode(op2);
+        tree1.updateTreeState();
 
-    }
 
-    public static void printAll(TreeMap<String, Double> treeMap){
-        for(Map.Entry<String, Double> et:treeMap.entrySet()){
-            System.out.println(et.getKey()+": "+et.getValue());
-        }
-        System.out.println();
+
+
+
+        int i = 0;
+
     }
 }
 

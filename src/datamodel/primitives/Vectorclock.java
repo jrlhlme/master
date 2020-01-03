@@ -1,20 +1,133 @@
 package datamodel.primitives;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Jarl on 04-Dec-19.
  */
 public class Vectorclock {
 
+    // TODO rm direct references, make setters/getters
     private HashMap<Integer, Integer> v_clck;
 
-    public void increment(Integer client_id){
+    // TODO return copy mby?
+    public Vectorclock increment(Integer client_id){
         // if exists ++ else create, set 1
+        Integer client_vector_clock = v_clck.get(client_id);
+        if (client_vector_clock == null){
+            v_clck.put(client_id, 1);
+        } else {
+            v_clck.put(client_id, client_vector_clock + 1);
+        }
+        return this;
     }
+
+    /**
+     * returns a copy of an incremented vector clock (does not mute original object)
+     * @param client_id
+     * @return
+     */
+    public Vectorclock incrementFrom(Integer client_id){
+        // if exists ++ else create, set 1
+        Vectorclock newVectorClock = new Vectorclock();
+        newVectorClock.v_clck = new HashMap<>(this.v_clck);
+        Integer client_vector_clock = newVectorClock.v_clck.get(client_id);
+
+        if (client_vector_clock == null){
+            newVectorClock.v_clck.put(client_id, 1);
+        } else {
+            newVectorClock.v_clck.put(client_id, client_vector_clock + 1);
+        }
+        return newVectorClock;
+    }
+
 
     public void join(Vectorclock diff_vclck){
         // foreach entry grab biggest val
+
+        Set<Integer> keySet = new HashSet<>(this.v_clck.keySet());
+        keySet.addAll(diff_vclck.v_clck.keySet());
+
+        Integer localVal, foreignVal;
+        for (Integer i : keySet){
+            localVal = this.v_clck.get(i);
+            foreignVal = diff_vclck.v_clck.get(i);
+            if (localVal == null || foreignVal == null){
+                this.v_clck.put(i, localVal == null ? foreignVal : localVal);
+            } else {
+                this.v_clck.put(i, localVal.compareTo(foreignVal) < 0 ? foreignVal : localVal);
+            }
+        }
+
+    }
+
+    public Vectorclock(){
+        this.v_clck = new HashMap<>();
+    }
+
+
+
+
+    public boolean isDominatedBy(Vectorclock compareVectorClock){
+        // TODO checks if the provided v_clck dominates (is after)
+
+
+
+        return false;
+    }
+
+    // TODO much room for optimization here
+    public boolean isMatching(Vectorclock compareVectorClock){
+        if (compareVectorClock.v_clck.keySet().equals(this.v_clck.keySet())){ // prob. doesn't work
+            for (Integer key : this.v_clck.keySet()){
+                if (!compareVectorClock.v_clck.get(key).equals(this.v_clck.get(key))){
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isConcurrentTo(Vectorclock compareVectorClock){
+        // TODO check vector clocks for concurrency
+        Set<Integer> compareVectorClockKeySet = compareVectorClock.v_clck.keySet();
+        if (!keysetMatches(compareVectorClockKeySet)){
+            return true;
+        }
+
+        boolean foreignGreaterThan = false, localGreaterThan = false;
+        for (Integer key : compareVectorClockKeySet){
+            int compareResult = this.v_clck.get(key).compareTo(compareVectorClock.v_clck.get(key));
+            if (compareResult != 0){
+                if (compareResult < 0){
+                    foreignGreaterThan = true;
+                } else {
+                    localGreaterThan = true;
+                }
+            }
+            if (foreignGreaterThan && localGreaterThan){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean keysetMatches(Set<Integer> foreignKeySet){
+        if (foreignKeySet.size() != this.v_clck.size()){
+            return false;
+        }
+
+        Set<Integer> localKeySet = this.v_clck.keySet();
+        for (Integer key : foreignKeySet){
+            if (!localKeySet.contains(key)){
+                return false;
+            }
+        }
+        return true;
     }
 
 }

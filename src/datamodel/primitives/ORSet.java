@@ -1,39 +1,43 @@
 package datamodel.primitives;
 
 import datamodel.operations.Operation;
+import datamodel.primitives.tree.DataType;
+import datamodel.primitives.tree.Tree;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeSet;
+import java.util.Map;
 
 /**
  * Created by Jarl on 30-Nov-19.
  */
-public class ORSet {
-    // state
-    // v_clck(obj)
+public class ORSet implements DataType {
 
-    // op-list
-
-
+    // reflects contents resulting from performed ops at the given time
     private List<Integer> state_contents;
-
-    private Vectorclock state_vclock;
-
+    private Vectorclock state_vclock; //TODO migrate to individual trees
 
 
-    private TreeSet oplist;
+    // TODO these are alternatives, figure out which is the best approach
+    private Map<Integer, Tree> entries; // we try this way initially - mapping btwn object id and its tree
+    private Tree operationStorage;
+
 
 
     public ORSet(){
         this.state_vclock = new Vectorclock();
         this.state_contents = new ArrayList();
 
-        this.oplist = new TreeSet();
     }
 
     public void performOperation(Operation operation){
+        Tree opTree = entries.get(operation.getObjectId());
+        opTree.addNode(operation);
 
+
+
+
+        opTree.updateTreeVectorClock(operation);
     }
 
 
