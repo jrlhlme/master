@@ -14,7 +14,18 @@ public class Vectorclock {
     private HashMap<Integer, Integer> v_clck;
 
     // TODO return copy mby?
-    public Vectorclock increment(Integer client_id){
+//    public Vectorclock increment(Integer client_id){
+//        // if exists ++ else create, set 1
+//        Integer client_vector_clock = v_clck.get(client_id);
+//        if (client_vector_clock == null){
+//            v_clck.put(client_id, 1);
+//        } else {
+//            v_clck.put(client_id, client_vector_clock + 1);
+//        }
+//        return this;
+//    }
+
+    public void increment(Integer client_id){
         // if exists ++ else create, set 1
         Integer client_vector_clock = v_clck.get(client_id);
         if (client_vector_clock == null){
@@ -22,26 +33,33 @@ public class Vectorclock {
         } else {
             v_clck.put(client_id, client_vector_clock + 1);
         }
-        return this;
+    }
+
+
+    @Override
+    public Vectorclock clone(){
+        Vectorclock vectorclock = new Vectorclock();
+        vectorclock.v_clck = new HashMap<>(this.v_clck);
+        return vectorclock;
     }
 
     /**
-     * returns a copy of an incremented vector clock (does not mute original object)
+     * returns a copy of the incremented vector clock
      * @param client_id
      * @return
      */
     public Vectorclock incrementFrom(Integer client_id){
         // if exists ++ else create, set 1
-        Vectorclock newVectorClock = new Vectorclock();
-        newVectorClock.v_clck = new HashMap<>(this.v_clck);
-        Integer client_vector_clock = newVectorClock.v_clck.get(client_id);
+//        Vectorclock newVectorClock = new Vectorclock();
+//        newVectorClock.v_clck = new HashMap<>(this.v_clck);
+        Integer client_vector_clock = this.v_clck.get(client_id);
 
         if (client_vector_clock == null){
-            newVectorClock.v_clck.put(client_id, 1);
+            this.v_clck.put(client_id, 1);
         } else {
-            newVectorClock.v_clck.put(client_id, client_vector_clock + 1);
+            this.v_clck.put(client_id, client_vector_clock + 1);
         }
-        return newVectorClock;
+        return this.clone();
     }
 
 
@@ -115,6 +133,19 @@ public class Vectorclock {
         }
         return false;
     }
+
+
+    /**
+     * checks if provided vector clock represents an operation that can be performed (must increment at most a single entry by at most 1)
+     * @param compareVectorClock
+     * @return
+     */
+    public boolean opCanBePerformed(Vectorclock compareVectorClock){
+        // TODO keyset of comparevector must be equal or exactly one greater, each entry must be lower or equal AND one entry must be one greater
+
+        return false;
+    }
+
 
     private boolean keysetMatches(Set<Integer> foreignKeySet){
         if (foreignKeySet.size() != this.v_clck.size()){

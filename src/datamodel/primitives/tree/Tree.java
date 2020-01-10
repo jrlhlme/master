@@ -1,6 +1,7 @@
 package datamodel.primitives.tree;
 
 import datamodel.operations.Operation;
+import datamodel.primitives.DataType;
 import datamodel.primitives.Vectorclock;
 
 import java.util.*;
@@ -9,7 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * Created by Jarl on 09-Dec-19.
  */
-public class Tree {
+public class Tree { // TODO update v_clck
 
     private TreeNode root;
 
@@ -29,69 +30,101 @@ public class Tree {
 
     // add/rm nodes functionality
     public Tree(Operation op){
-        this.root = new TreeNode(op, this, null, op.getVectorClock());
-        this.leaflist = new ArrayList<>();
-        this.leaflist.add(this.root);
+        // TODO replace root op w/ dummy root node to facilitate parallel creation of trees
+        this.treestate = new Vectorclock();
+        this.root = new TreeNode(null, this, null, this.treestate.clone());
 
+//        this.root = new TreeNode(op, this, null, op.getVectorClock());
+        this.leaflist = new ArrayList<>();
+//        this.leaflist.add(this.root);
+
+        //TODO verify that createNode is sufficient for local and foreign ops
+        op.setPreceding_operations_vectorclocks(Collections.singletonList(this.treestate.clone()));
+        this.createNode(op);
         this.updateTreeState();
     }
 
-
-    /**
-     * Called on completion of operation to increment tree vector clock
-     * @param operation the most recently performed operation
-     */
-    public void updateTreeVectorClock(Operation operation){
-        this.treestate.join(operation.getVectorClock());
+    public List<TreeNode> getLeaflist() {
+        return leaflist;
     }
+
+//    /**
+//     * Called on completion of operation to increment tree vector clock
+//     * @param operation the most recently performed operation
+//     */
+//    public void updateTreeVectorClock(Operation operation){
+//        this.treestate.join(operation.getVectorClock());
+//    }
 
 
     /**
      * Creates a new node from the existing tree state at current client/instance
      * @param op
      */
-    public void createNode(Operation op){
-        TreeNode newNode = new TreeNode(op, this, this.leaflist == null ? Collections.singletonList(this.root) : this.leaflist, op.getVectorClock());
+    public OperationResolveObject createNode(Operation op){
+        TreeNode newNode = new TreeNode(op, this, this.leaflist.isEmpty() ? Collections.singletonList(this.root) : this.leaflist,
+                this.treestate.incrementFrom(op.getClientId()));
+//                op.getVectorClock());
 
         //update leaves w/ new children
-        for (TreeNode leaf : leaflist){
-            leaf.addChildren(Collections.singletonList(newNode));
+        List<Vectorclock> precedingOps = new ArrayList<>();
+        if (leaflist.isEmpty()){
+            this.root.addChildren(Collections.singletonList(newNode));
+        } else {
+            for (TreeNode leaf : leaflist) {
+                leaf.addChildren(Collections.singletonList(newNode));
+                precedingOps.add(leaf.getVectorclock());
+            }
         }
 
+        if (precedingOps.size() == 0){
+            precedingOps.add(this.root.getVectorclock().clone());
+        }
+
+        op.setPreceding_operations_vectorclocks(precedingOps);
         this.leaflist = new ArrayList<>();
         this.leaflist.add(newNode);
+//        this.updateTreeState(); //Not needed, as state is incremented when creating newNode
 
-        // TODO perform op
+        return new OperationResolveObject(op, null);
     }
 
 
     /**
      * Creates a new TreeNode for an operation performed at a different client/instance
      * @param op
+     * @param provideConcurrentOps whether concurrent ops should be calculated and returned (unnecessary for some op types)
      */
-    public OperationResolveObject addNode(Operation op){
+    public OperationResolveObject addNode(Operation op, boolean provideConcurrentOps){
         // as ops are queued based on global vector clock we know this is a legal op for current instance of tree
         try {
             List<TreeNode> parentNodes = getTreeNodesForVectorClocks(op.getPrecedingOperationVectorClocks());
+            if (parentNodes == null){
+                throw new IllegalStateException("Preceding operations does not exist - operation cannot be performed at this time");
+            }
 
-            TreeNode newNode = new TreeNode(op, this, parentNodes, op.getVectorClock());
+            TreeNode newNode = new TreeNode(op, this, parentNodes, new Vectorclock());
             for (TreeNode parentNode : parentNodes){
                 parentNode.addChildren(Collections.singletonList(newNode));
+                newNode.getVectorclock().join(parentNode.getVectorclock());
                 // remove if exists
                 this.leaflist.remove(parentNode);
             }
+            newNode.getVectorclock().increment(op.getClientId());
             this.leaflist.add(newNode);
+            this.updateTreeState();
 
-            if (this.leaflist.size() > 1){
+            if (this.leaflist.size() > 1 && provideConcurrentOps){
                 return new OperationResolveObject(op, getRootOfConcurrentOps(newNode));
             } else {
                 // no concurrency
                 return new OperationResolveObject(op, null);
             }
 
+
         } catch (IllegalStateException e) {
             // TODO handle
-            return null;
+            throw new IllegalStateException("Operation cannot be performed at this time, message : " + e.getMessage());
         }
     }
 
@@ -103,14 +136,17 @@ public class Tree {
      * @return
      */
     private List<TreeNode> getTreeNodesForVectorClocks(List<Vectorclock> vectorClocks){
-        LinkedBlockingQueue<TreeNode> nodeQueue = new LinkedBlockingQueue<>(leaflist);
+        LinkedBlockingQueue<TreeNode> nodeQueue = this.leaflist.isEmpty() ? new LinkedBlockingQueue<>(Collections.singletonList(this.root)) : new LinkedBlockingQueue<>(leaflist);
+
         List<TreeNode> returnList = new ArrayList<>();
         TreeNode tn;
-        while (vectorClocks.size() > 0){
+
+        List<Integer> foundVectorClocks = new ArrayList<>();
+        while (vectorClocks.size() > foundVectorClocks.size()){
             tn = nodeQueue.poll();
 
             if (tn == null){
-                throw new IllegalStateException("Preceding operations does not exist - operation cannot be performed at this time");
+                return null;
             }
 
             try {
@@ -118,14 +154,14 @@ public class Tree {
                     nodeQueue.put(parent);
                 }
             } catch (InterruptedException e){
-                // TODO handle
                 throw new RuntimeException("Error when searching for concurrent op root : " + e.getMessage());
             }
 
-            for (int i = 0; i < vectorClocks.size(); i++){
+            // TODO not too pretty, done to avoid altering input v_clck (symptom of bigger issue)
+            for (int i = 0; i < vectorClocks.size() && !foundVectorClocks.contains(i); i++){
                 if (tn.getVectorclock().isMatching(vectorClocks.get(i))){
                     returnList.add(tn);
-                    vectorClocks.remove(i);
+                    foundVectorClocks.add(i);
                     break;
                 }
             }
@@ -139,13 +175,13 @@ public class Tree {
      * Updates tree vector clock to be the intersection of child vector clocks
      */
     public void updateTreeState(){
-        if (this.treestate == null){
-            this.treestate = leaflist.get(0).getVectorclock();
-        }
-
-        for (TreeNode leafNode: leaflist){
-            // TODO naive approach
-            this.treestate.join(leafNode.getVectorclock());
+        if (this.treestate == null || this.leaflist.isEmpty()){
+            this.treestate = this.root.getVectorclock().clone();
+        } else {
+            for (TreeNode leafNode : leaflist) {
+                // TODO naive approach
+                this.treestate.join(leafNode.getVectorclock());
+            }
         }
     }
 
@@ -175,38 +211,4 @@ public class Tree {
     }
 
 
-
-    public TreeNode getTreeNodeByVectorClock(Vectorclock vectorclock){
-
-        return null;
-    }
-
-
-
-
-
-//    /**
-//     * For the given tree, returns treenode where clients diverged
-//     * @return
-//     */
-//    public TreeNode getRootOfConcurrentOps(){
-//        // TODO if single leaf OR multiple leaves dominated by state of tree/datastruct then no concurrency
-//        // if not then extract all v_clck, then traverse up ONE until Node found that is dominated by EACH leaf TODO verify that this holds [SEE PAPER DOC]
-//
-////        Vectorclock treeState = this.treestate;
-////        for (TreeNode node : this.leaflist){
-////            if (treeState.isConcurrentTo(node.getContents().getVectorClock())){
-////                // traverse upwards until node is sequential to treestate
-////                TreeNode itrNode = node.getParents().get(0); // which path is selected up the tree is irrelevant TODO verify
-////                while (itrNode.getVectorclock().isConcurrentTo(treeState)){
-////                    itrNode = itrNode.getParents().get(0);
-////                }
-////                return itrNode;
-////            }
-////        }
-//        // TODO does not hold for n separate concurrent ops - rm this, replace w/ checkconcurrency(treeNode)
-//
-//
-//
-//    }
 }

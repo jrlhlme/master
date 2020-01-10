@@ -4,9 +4,7 @@ import datamodel.operations.Operation;
 import datamodel.primitives.Vectorclock;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Jarl on 09-Dec-19.
@@ -16,7 +14,7 @@ public class TreeNode {
     private Tree tree;
 
     // contents
-    private Operation contents;
+    private Operation operation;
     private Vectorclock vectorclock;
     // /contents
 
@@ -33,7 +31,7 @@ public class TreeNode {
 
         this.parents = parents != null ? parents : new ArrayList<>();
         this.children = new ArrayList<>();
-        this.contents = op;
+        this.operation = op;
         this.vectorclock = vectorclock;
     }
 
@@ -45,8 +43,8 @@ public class TreeNode {
         return this.vectorclock;
     }
 
-    public Operation getContents() {
-        return contents;
+    public Operation getOperation() {
+        return operation;
     }
 
     public List<TreeNode> getParents() {

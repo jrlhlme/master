@@ -1,19 +1,11 @@
 package datamodel.operations;
 
-import java.util.HashMap;
-import java.util.Map;
-
-/**
- * Created by Jarl on 04-Dec-19.
- */
 public class OperationType {
 
-    private int type;
+    public static final int ORSET_ADD = 1;
+    public static final int ORSET_REMOVE = 2;
 
-    public OperationType(){
-
-    }
-
-
+    public static final int MVR_SET = 3;
+    public static final int MVR_CLEAR = 4;
 
 }

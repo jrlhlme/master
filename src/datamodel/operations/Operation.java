@@ -1,5 +1,6 @@
 package datamodel.operations;
 
+import datamodel.operations.contents.OperationContents;
 import datamodel.primitives.Vectorclock;
 
 import java.util.List;
@@ -9,29 +10,25 @@ import java.util.List;
  */
 public class Operation {
 
-
-    // vectorclock in the Tree to contain the operation
-    private Vectorclock operation_vectorclock;
-
     // stores parent treenode vectorclocks (vectorclocks for preceding ops)
-    private List<Vectorclock> preceding_operation_vectorclocks;
+    // generated upon performing the operation on a tree
+    private List<Vectorclock> preceding_operations_vectorclocks;
 
-    private OperationType optype;
+    private Integer client_id;
 
-    private Integer client_id; // TODO own class?
-    private Integer object_id;
+    // whether the operation is the result of another cascading operation and can be discarded once dominated
+    private boolean is_cascading_op;
 
-    private Object payload;
+    private Integer operation_type;
+    private OperationContents operationContents;
 
 
-    public Operation(Vectorclock vectorclock, int client_id, int object_id, Object payload, List<Vectorclock> preceding_operation_vectorclocks){
-        this.operation_vectorclock = vectorclock;
+    public Operation(int client_id, OperationContents payload, List<Vectorclock> preceding_operation_vectorclocks, int operation_type, boolean is_cascading_op){
         this.client_id = client_id;
-        this.object_id = object_id;
-        this.preceding_operation_vectorclocks = preceding_operation_vectorclocks;
-
-        //TODO debug
-        this.payload = payload;
+        this.preceding_operations_vectorclocks = preceding_operation_vectorclocks;
+        this.operation_type = operation_type;
+        this.operationContents = payload;
+        this.is_cascading_op = is_cascading_op;
     }
 
 
@@ -39,18 +36,25 @@ public class Operation {
         return client_id;
     }
 
-    public Vectorclock getVectorClock() {
-        return operation_vectorclock;
-    }
-
     public List<Vectorclock> getPrecedingOperationVectorClocks() {
         // tree vector clock state BEFORE op performed
-        return preceding_operation_vectorclocks;
+        return preceding_operations_vectorclocks;
+    }
+
+    public OperationContents getOperationContents() {
+        return operationContents;
+    }
+
+    public Integer getOperationType() {
+        return operation_type;
     }
 
 
-    public Integer getObjectId() {
-        return object_id;
+    public boolean isCascadingOp() {
+        return is_cascading_op;
     }
 
+    public void setPreceding_operations_vectorclocks(List<Vectorclock> preceding_operations_vectorclocks) {
+        this.preceding_operations_vectorclocks = preceding_operations_vectorclocks;
+    }
 }
