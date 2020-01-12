@@ -4,6 +4,7 @@ import datamodel.operations.Operation;
 import datamodel.operations.OperationType;
 import datamodel.operations.contents.MVRUpdateContents;
 import datamodel.operations.contents.ORUpdateContents;
+import datamodel.primitives.tree.Tree;
 
 import java.util.*;
 
@@ -11,12 +12,16 @@ public class MVR implements DataType {
 
     private Map<String, ORSet> entries;
 
+    private Map<String, Tree> keyOperationMapping;
+
     // represents ownership of instance
     private int client_id;
 
     public MVR(int client_id){
         this.client_id = client_id;
         this.entries = new HashMap<>();
+
+        this.keyOperationMapping = new HashMap<>();
     }
 
 
@@ -30,6 +35,9 @@ public class MVR implements DataType {
         if (targetSet == null) {
             targetSet = new ORSet(this.client_id);
             this.entries.put(operationContents.getKey(), targetSet);
+            this.keyOperationMapping.put(((MVRUpdateContents) operation.getOperationContents()).getKey(), new Tree(operation));
+        } else {
+            this.keyOperationMapping.get(((MVRUpdateContents) operation.getOperationContents()).getKey()).createNode(operation);
         }
 
         Set<String> ORContents = new HashSet<>(targetSet.getStateContents());
@@ -44,7 +52,7 @@ public class MVR implements DataType {
                             new ORUpdateContents(orEntry),
                             null,
                             orEntry.equals(operationContents.getValue()) ? OperationType.ORSET_ADD : OperationType.ORSET_REMOVE,
-                            false
+                            operation.isCascadingOp()
                     );
                     targetSet.processOperation(OROperation);
                     OROperations.add(OROperation);
@@ -57,11 +65,21 @@ public class MVR implements DataType {
                             new ORUpdateContents(orEntry),
                             null,
                             OperationType.ORSET_REMOVE,
-                            false
+                            operation.isCascadingOp()
                     );
                     targetSet.processOperation(OROperation);
                     OROperations.add(OROperation);
                 }
+                break;
+            case OperationType.MVR_REMOVE:
+                OROperation = new Operation(
+                        operation.getClientId(),
+                        new ORUpdateContents(((MVRUpdateContents) operation.getOperationContents()).getValue()),
+                        null,
+                        OperationType.ORSET_REMOVE,
+                        operation.isCascadingOp()
+                );
+                OROperations.add(OROperation);
         }
 
         operationContents.appendOperations(OROperations);
@@ -83,7 +101,11 @@ public class MVR implements DataType {
                 // set does not exist, create
                 targetSet = new ORSet(this.client_id);
                 this.entries.put(operationContents.getKey(), targetSet);
+                this.keyOperationMapping.put(((MVRUpdateContents) operation.getOperationContents()).getKey(), new Tree(operation));
+            } else {
+                this.keyOperationMapping.get(operationContents.getKey()).addNode(operation, false);
             }
+
             for (Operation op : operationContents.getOperationSequence()){
                 targetSet.processOperation(op);
             }

@@ -4,6 +4,8 @@ import datamodel.operations.contents.OperationContents;
 import datamodel.primitives.Vectorclock;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by Jarl on 04-Dec-19.
@@ -29,6 +31,18 @@ public class Operation {
         this.operation_type = operation_type;
         this.operationContents = payload;
         this.is_cascading_op = is_cascading_op;
+    }
+
+    @Override
+    public Operation clone(){
+        List<Vectorclock> preceding_vectorclocks = this.preceding_operations_vectorclocks.stream().map((Function<Vectorclock, Vectorclock>) Vectorclock::clone).collect(Collectors.toList());
+        return new Operation(
+                this.client_id,
+                this.operationContents.clone(),
+                preceding_vectorclocks,
+                this.operation_type,
+                this.isCascadingOp()
+        );
     }
 
 

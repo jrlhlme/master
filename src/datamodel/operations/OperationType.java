@@ -7,5 +7,6 @@ public class OperationType {
 
     public static final int MVR_SET = 3;
     public static final int MVR_CLEAR = 4;
+    public static final int MVR_REMOVE = 5;
 
 }

@@ -28,7 +28,7 @@ public class Instance {
         this.instance_id = instance_id;
         this.idgen = new IdentifierGenerator(instance_id);
         this.opStorage = new OperationStorage();
-        this.objStorage = new ObjectStorage();
+//        this.objStorage = new ObjectStorage();
     }
 
 

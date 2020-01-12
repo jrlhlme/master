@@ -20,7 +20,7 @@ public class ORSet implements DataType {
     // represents ownership of instance
     private int client_id;
 
-    private Map<String, Tree> entries; // we try this way initially - mapping btwn object id and its tree
+    private Map<String, Tree> entries;
 
     public ORSet(int client_id){
         this.client_id = client_id;

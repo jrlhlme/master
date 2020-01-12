@@ -25,7 +25,11 @@ public class OperationStorage {
     }
 
     public Operation getExportOperation(){
-        return this.exportOperations.poll();
+        if (this.exportOperations.isEmpty()){
+            return null;
+        } else {
+            return this.exportOperations.poll().clone();
+        }
     }
 
 

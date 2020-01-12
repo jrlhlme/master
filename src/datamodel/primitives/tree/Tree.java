@@ -34,9 +34,7 @@ public class Tree { // TODO update v_clck
         this.treestate = new Vectorclock();
         this.root = new TreeNode(null, this, null, this.treestate.clone());
 
-//        this.root = new TreeNode(op, this, null, op.getVectorClock());
         this.leaflist = new ArrayList<>();
-//        this.leaflist.add(this.root);
 
         //TODO verify that createNode is sufficient for local and foreign ops
         op.setPreceding_operations_vectorclocks(Collections.singletonList(this.treestate.clone()));
@@ -47,14 +45,6 @@ public class Tree { // TODO update v_clck
     public List<TreeNode> getLeaflist() {
         return leaflist;
     }
-
-//    /**
-//     * Called on completion of operation to increment tree vector clock
-//     * @param operation the most recently performed operation
-//     */
-//    public void updateTreeVectorClock(Operation operation){
-//        this.treestate.join(operation.getVectorClock());
-//    }
 
 
     /**

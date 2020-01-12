@@ -1,3 +1,4 @@
+import datamodel.objects.ObjectType;
 import datamodel.objects.Operation;
 import datamodel.operations.OperationType;
 import datamodel.operations.Payload;
@@ -8,6 +9,7 @@ import datamodel.primitives.MVR;
 import datamodel.primitives.ORSet;
 import datamodel.primitives.Vectorclock;
 import datamodel.primitives.tree.Tree;
+import instance.assets.ObjectStorage;
 
 import java.util.*;
 
@@ -20,21 +22,24 @@ public class Main {
         int object_id = 0;
 
 
-//        Operation op = new Operation(client_id_1);
-//        op.addUnit(1, 21);
-//
-//        int i = 0;
+        ObjectStorage db = new ObjectStorage(client_id_1);
+        db.createOperation();
+        db.createUnit();
+        db.createMission();
 
+
+
+        int i = 0;
 
         // MVR test
 //        MVR mvrClient1 = new MVR(client_id_1);
 //        Vectorclock client1VectorClock = new Vectorclock();
 //        client1VectorClock.increment(client_id_1);
-//        datamodel.operations.Operation op11 = new datamodel.operations.Operation(client_id_1, new MVRUpdateContents("21", "1"), null, OperationType.MVR_SET);
+//        datamodel.operations.Operation op11 = new datamodel.operations.Operation(client_id_1, new MVRUpdateContents("21", "1"), null, OperationType.MVR_SET, false);
 //        mvrClient1.processOperation(op11);
 //
 //        client1VectorClock.increment(client_id_1);
-//        datamodel.operations.Operation op12 = new datamodel.operations.Operation(client_id_1, new MVRUpdateContents("21", "2"), null, OperationType.MVR_SET);
+//        datamodel.operations.Operation op12 = new datamodel.operations.Operation(client_id_1, new MVRUpdateContents("21", "2"), null, OperationType.MVR_SET, false);
 //        mvrClient1.processOperation(op12);
 //
 //
@@ -43,7 +48,7 @@ public class Main {
 //
 //        Vectorclock client2VectorClock = new Vectorclock();
 //        client2VectorClock.increment(client_id_2);
-//        datamodel.operations.Operation op21 = new datamodel.operations.Operation(client_id_2, new MVRUpdateContents("21", "3"), null, OperationType.MVR_SET);
+//        datamodel.operations.Operation op21 = new datamodel.operations.Operation(client_id_2, new MVRUpdateContents("21", "3"), null, OperationType.MVR_SET, false);
 //        mvrClient2.processOperation(op21);
 //
 //
