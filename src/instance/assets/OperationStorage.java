@@ -1,6 +1,7 @@
 package instance.assets;
 
 import datamodel.operations.Operation;
+import datamodel.operations.wrappers.ExportOperation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,26 +13,27 @@ public class OperationStorage {
     private List<Operation> performedOperations;
 
     // POC structure to provide single concurrent instance with operations, to be expanded for full version
-    private Queue<Operation> exportOperations;
+    private Queue<ExportOperation> exportOperations;
 
     public OperationStorage(){
         this.performedOperations = new ArrayList<>();
         this.exportOperations = new LinkedBlockingQueue<>();
     }
 
-    public void addOperation(Operation operation){
+    public void addOperation(Operation operation, int targetObjectType, boolean isExternal){
         this.performedOperations.add(operation);
-        this.exportOperations.add(operation);
+        if (!isExternal) {
+            this.exportOperations.add(new ExportOperation(operation, targetObjectType));
+        }
     }
 
-    public Operation getExportOperation(){
+    public ExportOperation getExportOperation(){
         if (this.exportOperations.isEmpty()){
             return null;
         } else {
             return this.exportOperations.poll().clone();
         }
     }
-
 
 
 }

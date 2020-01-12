@@ -10,12 +10,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * Created by Jarl on 09-Dec-19.
  */
-public class Tree { // TODO update v_clck
+public class Tree { // TODO purge contents of node if is dominated cascading op as garbage collection
 
     private TreeNode root;
 
 //    private Map<Integer, TreeNode> leaflist;
-    private List<TreeNode> leaflist; //TODO mby this way?
+    private List<TreeNode> leaflist;
 
     // represent aggregate state of instance the tree governs, updated on operations
     // updates to joined version of concurrent ops vector clocks on resolution
@@ -30,7 +30,6 @@ public class Tree { // TODO update v_clck
 
     // add/rm nodes functionality
     public Tree(Operation op){
-        // TODO replace root op w/ dummy root node to facilitate parallel creation of trees
         this.treestate = new Vectorclock();
         this.root = new TreeNode(null, this, null, this.treestate.clone());
 

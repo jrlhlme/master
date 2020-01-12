@@ -2,8 +2,8 @@ package instance.assets;
 
 import datamodel.objects.*;
 import datamodel.operations.OperationType;
-import datamodel.operations.contents.MVRUpdateContents;
 import datamodel.operations.contents.ORUpdateContents;
+import datamodel.operations.wrappers.ExportOperation;
 import datamodel.primitives.ORSet;
 
 import java.util.HashMap;
@@ -13,7 +13,7 @@ public class ObjectStorage {
 
     private int client_id;
 
-    // objects resulting from performed operations
+    // objects resulting from performed operations containing data and operation sequences
     private Map<String, Operation> operationObjects;
     private Map<String, Unit> unitObjects;
     private Map<String, Mission> missionObjects;
@@ -23,9 +23,11 @@ public class ObjectStorage {
     private ORSet units;
     private ORSet missions;
 
-    IdentifierGenerator identifierGenerator;
+    // generates globally unique id-values
+    private IdentifierGenerator identifierGenerator;
 
-    OperationStorage operationStorage;
+    // stores and manages export of operations performed
+    private OperationStorage operationStorage;
 
 
     public ObjectStorage(int client_id){
@@ -43,23 +45,41 @@ public class ObjectStorage {
         this.client_id = client_id;
     }
 
+    public ExportOperation getExportOperation(){
+        return this.operationStorage.getExportOperation();
+    }
+
+
+
     /**
      * Handles operations generated at another interface
-     * @param operation
+     * @param operationWrapper
      */
-    public void processExternalOperation(datamodel.operations.Operation operation){
+    public void processExternalOperation(ExportOperation operationWrapper){
+        switch (operationWrapper.getOperation().getOperationType()){
+            case OperationType.ORSET_ADD:
+                createOrAdd(operationWrapper.getTargetObjectType(),
+                        ((ORUpdateContents)operationWrapper.getOperation().getOperationContents()).getId(),
+                        operationWrapper.getOperation().isCascadingOp(), operationWrapper.getOperation());
+                break;
+            case OperationType.ORSET_REMOVE:
+                remove(operationWrapper.getTargetObjectType(),
+                        ((ORUpdateContents)operationWrapper.getOperation().getOperationContents()).getId(),
+                        operationWrapper.getOperation().isCascadingOp(), operationWrapper.getOperation());
+                break;
 
+        }
     }
 
     /**
      * Internal helper function applying generated operation update the correct structures
      * @param operation
      */
-    private void processInternalOperation(datamodel.operations.Operation operation, int targetObjectType){
+    private void processOperation(datamodel.operations.Operation operation, int targetObjectType, boolean isExternal){
         switch (operation.getOperationType()){
             case OperationType.ORSET_ADD:
             case OperationType.ORSET_REMOVE:
-                ORUpdateContents orOperationContents = (ORUpdateContents) operation.getOperationContents();
+//                ORUpdateContents orOperationContents = (ORUpdateContents) operation.getOperationContents();
                 switch (targetObjectType){
                     case ObjectType.OPERATION:
                         this.operations.processOperation(operation);
@@ -80,88 +100,91 @@ public class ObjectStorage {
 
 
         }
-        this.operationStorage.addOperation(operation);
-
+        this.operationStorage.addOperation(operation, targetObjectType, isExternal);
     }
 
 
+
     /**
-     * Handler for creating new objects
+     * Handler for creating new objects or re-adding existing ones
      * @param objectType id contained in datamodel.object.ObjectType
-     * @param id
-     * @param isCascading
+     * @param id null value creates new object, provided value attempts to perform an add-operation on object
+     *           corresponding to id
+     * @param isCascading flags generated operation as a result of cascading or not - has impact on garbage collection
+     * @param externalOp operation, provided if processing external operations
      */
-    private void createOrAdd(int objectType, String id, boolean isCascading){
-        datamodel.operations.Operation createOp;
+    private void createOrAdd(int objectType, String id, boolean isCascading, datamodel.operations.Operation externalOp){
+        datamodel.operations.Operation createOp = externalOp;
         switch (objectType){
             case ObjectType.OPERATION:
                 Operation operation;
-                if (id == null){
-                    operation = new Operation(this.client_id, this.identifierGenerator.getIdentifier());
+                if (id == null || (externalOp != null && getOperationInternal(id) == null)){
+                    operation = new Operation(this.client_id,
+                            externalOp != null ? ((ORUpdateContents)externalOp.getOperationContents()).getId() : this.identifierGenerator.getIdentifier(),
+                            this);
                 } else {
                     operation = getOperationInternal(id);
                     if (operation == null){
                         throw new IllegalStateException("Cannot add, no operation corresponding to id : '" + id + "' exists");
                     }
                 }
-                createOp = new datamodel.operations.Operation(
-                        this.client_id,
-                        new ORUpdateContents(operation.getId()),
-                        null,
-                        OperationType.ORSET_ADD,
-                        isCascading
-                );
-                processInternalOperation(createOp, ObjectType.OPERATION);
+                if (createOp == null) {
+                    createOp = new datamodel.operations.Operation(
+                            this.client_id,
+                            new ORUpdateContents(operation.getId()),
+                            null,
+                            OperationType.ORSET_ADD,
+                            isCascading
+                    );
+                }
+                processOperation(createOp, ObjectType.OPERATION, externalOp != null);
                 this.operationObjects.put(operation.getId(), operation);
                 break;
             case ObjectType.UNIT:
                 Unit unit;
-                if (id == null){
-                    unit = new Unit(client_id, this.identifierGenerator.getIdentifier());
+                if (id == null || (externalOp != null && getUnitInternal(id) == null)){
+                    unit = new Unit(client_id, externalOp != null ? ((ORUpdateContents)externalOp.getOperationContents()).getId() : this.identifierGenerator.getIdentifier());
                 } else {
                     unit = getUnitInternal(id);
                     if (unit == null){
                         throw new IllegalStateException("Cannot add, no operation corresponding to id : '" + id + "' exists");
                     }
                 }
-                createOp = new datamodel.operations.Operation(
-                        this.client_id,
-                        new ORUpdateContents(unit.getId()),
-                        null,
-                        OperationType.ORSET_ADD,
-                        isCascading
-                );
-                processInternalOperation(createOp, ObjectType.UNIT);
+                if (createOp == null) {
+                    createOp = new datamodel.operations.Operation(
+                            this.client_id,
+                            new ORUpdateContents(unit.getId()),
+                            null,
+                            OperationType.ORSET_ADD,
+                            isCascading
+                    );
+                }
+                processOperation(createOp, ObjectType.UNIT, externalOp != null);
                 this.unitObjects.put(unit.getId(), unit);
                 break;
             case ObjectType.MISSION:
                 Mission mission;
-                if (id == null){
-                    mission = new Mission(client_id, this.identifierGenerator.getIdentifier());
+                if (id == null || (externalOp != null && getMissionInternal(id) == null)){
+                    mission = new Mission(client_id, externalOp != null ? ((ORUpdateContents)externalOp.getOperationContents()).getId() : this.identifierGenerator.getIdentifier());
                 } else {
                     mission = getMissionInternal(id);
                     if (mission == null){
                         throw new IllegalStateException("Cannot add, no operation corresponding to id : '" + id + "' exists");
                     }
                 }
-                createOp = new datamodel.operations.Operation(
-                        this.client_id,
-                        new ORUpdateContents(mission.getId()),
-                        null,
-                        OperationType.ORSET_ADD,
-                        isCascading
-                );
-                processInternalOperation(createOp, ObjectType.MISSION);
+                if (createOp == null) {
+                    createOp = new datamodel.operations.Operation(
+                            this.client_id,
+                            new ORUpdateContents(mission.getId()),
+                            null,
+                            OperationType.ORSET_ADD,
+                            isCascading
+                    );
+                }
+                processOperation(createOp, ObjectType.MISSION, externalOp != null);
                 this.missionObjects.put(mission.getId(), mission);
                 break;
         }
-    }
-
-
-
-    private void add(int objectType, String id, boolean isCascading){
-
-
     }
 
 
@@ -170,51 +193,59 @@ public class ObjectStorage {
      * Handler for deleting existing objects
      * @param objectType
      * @param id
+     * @param isCascading flags generated operation as a result of cascading or not - has impact on garbage collection
+     * @param externalOp operation, provided if processing external operations
      */
-    private void remove(int objectType, String id){
-        datamodel.operations.Operation removeOp;
+    private void remove(int objectType, String id, boolean isCascading, datamodel.operations.Operation externalOp){
+        datamodel.operations.Operation removeOp = externalOp;
         switch (objectType){
             case ObjectType.OPERATION:
                 Operation operation = getOperationInternal(id);
                 if (operation == null){
                     throw new IllegalStateException("Operation with id : '" + id + "'not found, could not call removeOperation()");
                 }
-                removeOp = new datamodel.operations.Operation(
-                        this.client_id,
-                        new ORUpdateContents(operation.getId()),
-                        null,
-                        OperationType.ORSET_REMOVE,
-                        false
-                );
-                processInternalOperation(removeOp, ObjectType.OPERATION);
+                if (removeOp == null) {
+                    removeOp = new datamodel.operations.Operation(
+                            this.client_id,
+                            new ORUpdateContents(operation.getId()),
+                            null,
+                            OperationType.ORSET_REMOVE,
+                            isCascading
+                    );
+                }
+                processOperation(removeOp, ObjectType.OPERATION, externalOp != null);
                 break;
             case ObjectType.UNIT:
                 Unit unit = getUnitInternal(id);
                 if (unit == null){
                     throw new IllegalStateException("Operation with id : '" + id + "'not found, could not call removeOperation()");
                 }
-                removeOp = new datamodel.operations.Operation(
-                        this.client_id,
-                        new ORUpdateContents(unit.getId()),
-                        null,
-                        OperationType.ORSET_REMOVE,
-                        false
-                );
-                processInternalOperation(removeOp, ObjectType.UNIT);
+                if (removeOp == null) {
+                    removeOp = new datamodel.operations.Operation(
+                            this.client_id,
+                            new ORUpdateContents(unit.getId()),
+                            null,
+                            OperationType.ORSET_REMOVE,
+                            isCascading
+                    );
+                }
+                processOperation(removeOp, ObjectType.UNIT, externalOp != null);
                 break;
             case ObjectType.MISSION:
                 Mission mission = getMissionInternal(id);
                 if (mission == null){
                     throw new IllegalStateException("Operation with id : '" + id + "'not found, could not call removeOperation()");
                 }
-                removeOp = new datamodel.operations.Operation(
-                        this.client_id,
-                        new ORUpdateContents(mission.getId()),
-                        null,
-                        OperationType.ORSET_REMOVE,
-                        false
-                );
-                processInternalOperation(removeOp, ObjectType.MISSION);
+                if (removeOp == null) {
+                    removeOp = new datamodel.operations.Operation(
+                            this.client_id,
+                            new ORUpdateContents(mission.getId()),
+                            null,
+                            OperationType.ORSET_REMOVE,
+                            isCascading
+                    );
+                }
+                processOperation(removeOp, ObjectType.MISSION, externalOp != null);
                 break;
         }
     }
@@ -247,19 +278,19 @@ public class ObjectStorage {
 
 
     public void createOperation(){
-        createOrAdd(ObjectType.OPERATION, null, false);
+        createOrAdd(ObjectType.OPERATION, null, false, null);
     }
 
 
 
     public void addOperation(String id, boolean isCascading){
-        createOrAdd(ObjectType.OPERATION, id, isCascading);
+        createOrAdd(ObjectType.OPERATION, id, isCascading, null);
     }
 
 
 
     public void removeOperation(String id){
-        remove(ObjectType.OPERATION, id);
+        remove(ObjectType.OPERATION, id, false, null);
     }
 
 
@@ -285,19 +316,19 @@ public class ObjectStorage {
 
 
     public void createUnit(){
-        createOrAdd(ObjectType.UNIT, null, false);
+        createOrAdd(ObjectType.UNIT, null, false, null);
     }
 
 
 
     public void addUnit(String id, boolean isCascading){
-        createOrAdd(ObjectType.UNIT, id, isCascading);
+        createOrAdd(ObjectType.UNIT, id, isCascading, null);
     }
 
 
 
     public void removeUnit(String id){
-        remove(ObjectType.UNIT, id);
+        remove(ObjectType.UNIT, id, false, null);
     }
 
 
@@ -323,19 +354,19 @@ public class ObjectStorage {
 
 
     public void createMission(){
-        createOrAdd(ObjectType.MISSION, null, false);
+        createOrAdd(ObjectType.MISSION, null, false, null);
     }
 
 
 
     public void addMission(String id, boolean isCascading){
-        createOrAdd(ObjectType.MISSION, id, isCascading);
+        createOrAdd(ObjectType.MISSION, id, isCascading, null);
     }
 
 
 
     public void removeMission(String id){
-        remove(ObjectType.MISSION, id);
+        remove(ObjectType.MISSION, id, false, null);
     }
 
 

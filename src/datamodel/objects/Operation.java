@@ -18,12 +18,17 @@ public class Operation implements DBObject{
     private String id;
     private int client_id;
 
+    // the db instance the object is connected to
+    private ObjectStorage objectStorage;
+
     private OperationUnitRelation assignedUnits;
 
-    public Operation(int client_id, String id){
+    public Operation(int client_id, String id, ObjectStorage objectStorage){
         this.client_id = client_id;
         this.id = id;
         this.assignedUnits = new OperationUnitRelation(client_id);
+
+        this.objectStorage = objectStorage;
     }
 
 

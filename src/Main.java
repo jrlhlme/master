@@ -24,8 +24,16 @@ public class Main {
 
         ObjectStorage db = new ObjectStorage(client_id_1);
         db.createOperation();
-        db.createUnit();
-        db.createMission();
+        db.addOperation("1-1", false);
+//        db.createUnit();
+//        db.createMission();
+
+        ObjectStorage db2 = new ObjectStorage(client_id_2);
+        db2.processExternalOperation(db.getExportOperation());
+        db2.removeOperation("1-1");
+
+        db.processExternalOperation(db2.getExportOperation());
+        db2.processExternalOperation(db.getExportOperation());
 
 
 
