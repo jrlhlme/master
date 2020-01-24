@@ -9,22 +9,13 @@ import java.util.List;
 public class Unit {
 
     private String id;
-    private int client_id;
-
-    private List<Operation> operations;
-
-//    private ORSet missions;
-
-//    private ORSet personell;
-//    private MVR personell_role_mapping;
 
     // updated as a result of altering the callsign mapping in the Operation-Unit relation
-    // locally maintained,
+    // locally maintained, TODO
     private String callsign;
 
 
-    public Unit(int client_id, String id){
-        this.client_id = client_id;
+    public Unit(String id){
         this.id = id;
     }
 
@@ -40,11 +31,4 @@ public class Unit {
         this.callsign = callsign;
     }
 
-    public List<Operation> getOperations() {
-        return operations;
-    }
-
-    public void setOperation(Operation operation) {
-//        this.operation = operation;
-    }
 }

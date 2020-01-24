@@ -1,17 +1,4 @@
-import datamodel.objects.ObjectType;
-import datamodel.objects.Operation;
-import datamodel.operations.OperationType;
-import datamodel.operations.Payload;
-import datamodel.operations.contents.MVRUpdateContents;
-import datamodel.operations.contents.ORUpdateContents;
-import datamodel.operations.contents.OperationContents;
-import datamodel.primitives.MVR;
-import datamodel.primitives.ORSet;
-import datamodel.primitives.Vectorclock;
-import datamodel.primitives.tree.Tree;
 import instance.assets.ObjectStorage;
-
-import java.util.*;
 
 public class Main {
 

@@ -35,7 +35,8 @@ public class Operation {
 
     @Override
     public Operation clone(){
-        List<Vectorclock> preceding_vectorclocks = this.preceding_operations_vectorclocks.stream().map((Function<Vectorclock, Vectorclock>) Vectorclock::clone).collect(Collectors.toList());
+        List<Vectorclock> preceding_vectorclocks = this.preceding_operations_vectorclocks.stream()
+                .map((Function<Vectorclock, Vectorclock>) Vectorclock::clone).collect(Collectors.toList());
         return new Operation(
                 this.client_id,
                 this.operationContents.clone(),

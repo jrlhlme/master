@@ -69,7 +69,6 @@ public class Tree { // TODO purge contents of node if is dominated cascading op 
         op.setPreceding_operations_vectorclocks(precedingOps);
         this.leaflist = new ArrayList<>();
         this.leaflist.add(newNode);
-//        this.updateTreeState(); //Not needed, as state is incremented when creating newNode
 
         return new OperationResolveObject(op, null);
     }

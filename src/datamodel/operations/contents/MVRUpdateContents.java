@@ -9,17 +9,12 @@ public class MVRUpdateContents implements OperationContents {
 
     private String key;
     private String value;
-//    private String targetObjectType;
-//    private String targetObjectId;
     private List<Operation> operationSequence;
 
     public MVRUpdateContents(String key, String value/*, String targetObjectType, String targetObjectId*/){
         this.key = key;
         this.value = value;
         this.operationSequence = new ArrayList<>();
-
-//        this.targetObjectId = targetObjectId;
-//        this.targetObjectType = targetObjectType;
     }
 
     public String getKey() {
@@ -45,10 +40,4 @@ public class MVRUpdateContents implements OperationContents {
         return oc;
     }
 
-//    public String getTargetObjectType(){
-//        return this.targetObjectType;
-//    }
-//    public String getTargetObjectId(){
-//        return this.targetObjectId;
-//    }
 }

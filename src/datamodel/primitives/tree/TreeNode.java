@@ -16,7 +16,6 @@ public class TreeNode {
     // contents
     private Operation operation;
     private Vectorclock vectorclock;
-    // /contents
 
     private  List<TreeNode> parents;
     private  List<TreeNode> children;

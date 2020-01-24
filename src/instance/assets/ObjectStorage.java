@@ -287,10 +287,7 @@ public class ObjectStorage {
             case ObjectType.OPERATION:
                 Operation operation;
                 if (id == null || (externalOp != null && getOperationInternal(id) == null)){
-                    operation = new Operation(externalOp != null ? ((ORUpdateContents)externalOp.getOperationContents()).getId() : this.identifierGenerator.getIdentifier()
-//                            ,externalOp != null ? ((ORUpdateContents)externalOp.getOperationContents()).getId() : this.identifierGenerator.getIdentifier(),
-//                            this.operationStorage
-                    );
+                    operation = new Operation(externalOp != null ? ((ORUpdateContents)externalOp.getOperationContents()).getId() : this.identifierGenerator.getIdentifier());
                 } else {
                     operation = getOperationInternal(id);
                     if (operation == null){
@@ -312,7 +309,7 @@ public class ObjectStorage {
             case ObjectType.UNIT:
                 Unit unit;
                 if (id == null || (externalOp != null && getUnitInternal(id) == null)){
-                    unit = new Unit(client_id, externalOp != null ? ((ORUpdateContents)externalOp.getOperationContents()).getId() : this.identifierGenerator.getIdentifier());
+                    unit = new Unit(externalOp != null ? ((ORUpdateContents)externalOp.getOperationContents()).getId() : this.identifierGenerator.getIdentifier());
                 } else {
                     unit = getUnitInternal(id);
                     if (unit == null){
@@ -334,7 +331,7 @@ public class ObjectStorage {
             case ObjectType.MISSION:
                 Mission mission;
                 if (id == null || (externalOp != null && getMissionInternal(id) == null)){
-                    mission = new Mission(client_id, externalOp != null ? ((ORUpdateContents)externalOp.getOperationContents()).getId() : this.identifierGenerator.getIdentifier());
+                    mission = new Mission(externalOp != null ? ((ORUpdateContents)externalOp.getOperationContents()).getId() : this.identifierGenerator.getIdentifier());
                 } else {
                     mission = getMissionInternal(id);
                     if (mission == null){
