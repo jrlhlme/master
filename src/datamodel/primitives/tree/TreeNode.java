@@ -18,10 +18,6 @@ public class TreeNode {
     private Vectorclock vectorclock;
     // /contents
 
-
-    // client_id : node mapping TODO mby better as lists?
-//    private Map<Integer, TreeNode> parents;
-//    private Map<Integer, TreeNode> children;
     private  List<TreeNode> parents;
     private  List<TreeNode> children;
 

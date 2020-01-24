@@ -20,10 +20,11 @@ public class OperationStorage {
         this.exportOperations = new LinkedBlockingQueue<>();
     }
 
-    public void addOperation(Operation operation, int targetObjectType, boolean isExternal){
+
+    public void addOperation(Operation operation, int targetObjectType, String targetId, boolean isExternal){
         this.performedOperations.add(operation);
         if (!isExternal) {
-            this.exportOperations.add(new ExportOperation(operation, targetObjectType));
+            this.exportOperations.add(new ExportOperation(operation, targetObjectType, targetId));
         }
     }
 

@@ -40,7 +40,9 @@ public class MVRUpdateContents implements OperationContents {
 
     @Override
     public MVRUpdateContents clone(){
-        return new MVRUpdateContents(this.key, this.value);
+        MVRUpdateContents oc = new MVRUpdateContents(this.key, this.value);
+        this.operationSequence.forEach((op) -> oc.operationSequence.add(op.clone()));
+        return oc;
     }
 
 //    public String getTargetObjectType(){

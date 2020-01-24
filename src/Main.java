@@ -35,6 +35,14 @@ public class Main {
         db.processExternalOperation(db2.getExportOperation());
         db2.processExternalOperation(db.getExportOperation());
 
+        db.createUnit();
+
+        db.assignOperationUnit(db.getOperation("1-1"), db.getUnit("1-2"), "22B", false);
+
+        db2.processExternalOperation(db.getExportOperation());
+        db2.processExternalOperation(db.getExportOperation());
+        db2.processExternalOperation(db.getExportOperation());
+        db2.processExternalOperation(db.getExportOperation());
 
 
         int i = 0;

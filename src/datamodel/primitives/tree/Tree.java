@@ -18,10 +18,6 @@ public class Tree { // TODO purge contents of node if is dominated cascading op 
     private List<TreeNode> leaflist;
 
     // represent aggregate state of instance the tree governs, updated on operations
-    // updates to joined version of concurrent ops vector clocks on resolution
-    // also used to communicate what updates are lacking when exchanging data
-    // TODO possibly poor idea as it is insufficient as anchor for new op - instead use leaflist.getVectorClocks()? - Nope, see below
-    // TODO used to store op progress -> join of vector clocks for each op performed - leaves (represents completed ops)
     private Vectorclock treestate;
 
     // connected datatype
@@ -112,7 +108,6 @@ public class Tree { // TODO purge contents of node if is dominated cascading op 
 
 
         } catch (IllegalStateException e) {
-            // TODO handle
             throw new IllegalStateException("Operation cannot be performed at this time, message : " + e.getMessage());
         }
     }
@@ -191,7 +186,6 @@ public class Tree { // TODO purge contents of node if is dominated cascading op 
                 try {
                     nodeQueue.put(treeNode);
                 } catch (InterruptedException e) {
-                    // TODO handle
                     throw new RuntimeException("Error when searching for concurrent op root : " + e.getMessage());
                 }
             }

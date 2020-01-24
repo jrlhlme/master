@@ -10,20 +10,7 @@ import java.util.Set;
  */
 public class Vectorclock {
 
-    // TODO rm direct references, make setters/getters
     private HashMap<Integer, Integer> v_clck;
-
-    // TODO return copy mby?
-//    public Vectorclock increment(Integer client_id){
-//        // if exists ++ else create, set 1
-//        Integer client_vector_clock = v_clck.get(client_id);
-//        if (client_vector_clock == null){
-//            v_clck.put(client_id, 1);
-//        } else {
-//            v_clck.put(client_id, client_vector_clock + 1);
-//        }
-//        return this;
-//    }
 
     public void increment(Integer client_id){
         // if exists ++ else create, set 1
@@ -111,7 +98,6 @@ public class Vectorclock {
     }
 
     public boolean isConcurrentTo(Vectorclock compareVectorClock){
-        // TODO check vector clocks for concurrency
         Set<Integer> compareVectorClockKeySet = compareVectorClock.v_clck.keySet();
         if (!keysetMatches(compareVectorClockKeySet)){
             return true;

@@ -4,12 +4,16 @@ import datamodel.primitives.MVR;
 import datamodel.primitives.ORSet;
 import instance.assets.IdentifierGenerator;
 
+import java.util.List;
+
 public class Unit {
 
     private String id;
     private int client_id;
 
-    private ORSet missions;
+    private List<Operation> operations;
+
+//    private ORSet missions;
 
 //    private ORSet personell;
 //    private MVR personell_role_mapping;
@@ -34,5 +38,13 @@ public class Unit {
 
     public void setCallsign(String callsign) {
         this.callsign = callsign;
+    }
+
+    public List<Operation> getOperations() {
+        return operations;
+    }
+
+    public void setOperation(Operation operation) {
+//        this.operation = operation;
     }
 }
