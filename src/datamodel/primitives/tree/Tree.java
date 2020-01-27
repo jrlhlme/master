@@ -140,7 +140,6 @@ public class Tree { // TODO purge contents of node if is dominated cascading op 
                 throw new RuntimeException("Error when searching for concurrent op root : " + e.getMessage());
             }
 
-            // TODO not too pretty, done to avoid altering input v_clck (symptom of bigger issue)
             for (int i = 0; i < vectorClocks.size() && !foundVectorClocks.contains(i); i++){
                 if (tn.getVectorclock().isMatching(vectorClocks.get(i))){
                     returnList.add(tn);
@@ -162,7 +161,6 @@ public class Tree { // TODO purge contents of node if is dominated cascading op 
             this.treestate = this.root.getVectorclock().clone();
         } else {
             for (TreeNode leafNode : leaflist) {
-                // TODO naive approach
                 this.treestate.join(leafNode.getVectorclock());
             }
         }
@@ -176,7 +174,6 @@ public class Tree { // TODO purge contents of node if is dominated cascading op 
         TreeNode tn = this.root;
         LinkedBlockingQueue<TreeNode> nodeQueue = new LinkedBlockingQueue<>();
 
-        // TODO complete this more gracefully
         while (true) {
             for (TreeNode treeNode : tn.getChildren()) {
                 if (treeNode.getVectorclock().isConcurrentTo(leaf.getVectorclock())) {

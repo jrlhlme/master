@@ -12,7 +12,7 @@ public class Mission {
 //    private MVR unit_callsign_mapping;
 
     // updated as a result of altering the identifier mapping in the Operation-Mission relation
-    // locally maintained, derived from distributed objects TODO prob not
+    // locally maintained, derived from distributed objects
     private String identifier;
 
 

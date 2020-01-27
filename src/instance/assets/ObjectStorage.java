@@ -161,118 +161,6 @@ public class ObjectStorage {
 
 
 
-    private void assignRelation(int objectType, String leftId, String rightId, String attribute, boolean isCascading, datamodel.operations.Operation externalOp){
-        datamodel.operations.Operation createOp = externalOp;
-        switch (objectType){
-            case ObjectType.OPERATION_UNIT_RELATION:
-                if (externalOp == null && (getUnitInternal(rightId) == null || getOperationInternal(leftId) == null)){
-                    throw new IllegalStateException("Cannot assign relation between operation and unit, object(s) do not exist");
-                }
-                if (createOp == null){
-                    createOp = new datamodel.operations.Operation(
-                        this.client_id,
-                        new MVRUpdateContents(attribute, rightId),
-                    null,
-                        OperationType.MVR_SET,
-                        isCascading
-                    );
-                }
-                processOperation(createOp, ObjectType.OPERATION_UNIT_RELATION, leftId, externalOp != null);
-                // TODO mute derived objects
-                break;
-            case ObjectType.OPERATION_MISSION_RELATION:
-                if (getMissionInternal(rightId) == null || getOperationInternal(leftId) == null){
-                    throw new IllegalStateException("Cannot assign relation between operation and mission, object(s) do not exist");
-                }
-                if (createOp == null){
-                    createOp = new datamodel.operations.Operation(
-                            this.client_id,
-                            new MVRUpdateContents(attribute, rightId),
-                            null,
-                            OperationType.MVR_SET,
-                            isCascading
-                    );
-                }
-                processOperation(createOp, ObjectType.OPERATION_MISSION_RELATION, leftId, externalOp != null);
-                // TODO mute derived objects
-                break;
-            case ObjectType.UNIT_MISSION_RELATION:
-                if (getMissionInternal(rightId) == null || getUnitInternal(leftId) == null){
-                    throw new IllegalStateException("Cannot assign relation between operation and mission, object(s) do not exist");
-                }
-                if (createOp == null){
-                    createOp = new datamodel.operations.Operation(
-                            this.client_id,
-                            new MVRUpdateContents(attribute, rightId),
-                            null,
-                            OperationType.MVR_SET,
-                            isCascading
-                    );
-                }
-                processOperation(createOp, ObjectType.OPERATION_MISSION_RELATION, leftId, externalOp != null);
-                // TODO mute derived objects
-                break;
-        }
-
-    }
-
-
-    private void unassignRelation(int objectType, String leftId, String rightId, String attribute, boolean isCascading, datamodel.operations.Operation externalOp){
-        datamodel.operations.Operation removeOp = externalOp;
-        switch (objectType){
-            case ObjectType.OPERATION_UNIT_RELATION:
-                if (getUnitInternal(rightId) == null || getOperationInternal(leftId) == null){
-                    throw new IllegalStateException("Cannot assign relation between operation and unit, object(s) do not exist");
-                }
-                if (removeOp == null){
-                    removeOp = new datamodel.operations.Operation(
-                            this.client_id,
-                            new MVRUpdateContents(attribute, rightId),
-                            null,
-                            OperationType.MVR_REMOVE,
-                            isCascading
-                    );
-                }
-                processOperation(removeOp, ObjectType.OPERATION_UNIT_RELATION, leftId, externalOp != null);
-                // TODO mute derived objects
-                break;
-            case ObjectType.OPERATION_MISSION_RELATION:
-                if (getMissionInternal(rightId) == null || getOperationInternal(leftId) == null){
-                    throw new IllegalStateException("Cannot assign relation between operation and mission, object(s) do not exist");
-                }
-                if (removeOp == null){
-                    removeOp = new datamodel.operations.Operation(
-                            this.client_id,
-                            new MVRUpdateContents(attribute, rightId),
-                            null,
-                            OperationType.MVR_REMOVE,
-                            isCascading
-                    );
-                }
-                processOperation(removeOp, ObjectType.OPERATION_MISSION_RELATION, leftId, externalOp != null);
-                // TODO mute derived objects
-                break;
-            case ObjectType.UNIT_MISSION_RELATION:
-                if (getMissionInternal(rightId) == null || getUnitInternal(leftId) == null){
-                    throw new IllegalStateException("Cannot assign relation between operation and mission, object(s) do not exist");
-                }
-                if (removeOp == null){
-                    removeOp = new datamodel.operations.Operation(
-                            this.client_id,
-                            new MVRUpdateContents(attribute, rightId),
-                            null,
-                            OperationType.MVR_REMOVE,
-                            isCascading
-                    );
-                }
-                processOperation(removeOp, ObjectType.OPERATION_MISSION_RELATION, leftId, externalOp != null);
-                // TODO mute derived objects
-                break;
-        }
-    }
-
-
-
     /**
      * Handler for creating new objects or re-adding existing ones
      * @param objectType id contained in datamodel.object.ObjectType
@@ -450,6 +338,9 @@ public class ObjectStorage {
 
 
     public void addOperation(String id, boolean isCascading){
+
+        // TODO cascade on relations
+
         createOrAddOREntry(ObjectType.OPERATION, id, isCascading, null);
     }
 
@@ -489,6 +380,9 @@ public class ObjectStorage {
 
 
     public void addUnit(String id, boolean isCascading){
+
+        // TODO cascade on relations
+
         createOrAddOREntry(ObjectType.UNIT, id, isCascading, null);
     }
 
@@ -528,6 +422,9 @@ public class ObjectStorage {
 
 
     public void addMission(String id, boolean isCascading){
+
+        // TODO cascade on relations
+
         createOrAddOREntry(ObjectType.MISSION, id, isCascading, null);
     }
 
@@ -543,6 +440,215 @@ public class ObjectStorage {
     /**
      * Relations
      */
+
+    private void assignRelation(int objectType, String leftId, String rightId, String attribute, boolean isCascading, datamodel.operations.Operation externalOp){
+        datamodel.operations.Operation createOp = externalOp; // TODO this works?
+        switch (objectType){
+            case ObjectType.OPERATION_UNIT_RELATION:
+                if (externalOp == null && (getUnitInternal(rightId) == null || getOperationInternal(leftId) == null)){
+                    throw new IllegalStateException("Cannot assign relation between operation and unit, object(s) do not exist");
+                }
+                if (createOp == null){
+                    createOp = new datamodel.operations.Operation(
+                            this.client_id,
+                            new MVRUpdateContents(attribute, rightId),
+                            null,
+                            OperationType.MVR_SET,
+                            isCascading
+                    );
+                }
+                processOperation(createOp, ObjectType.OPERATION_UNIT_RELATION, leftId, externalOp != null);
+                // TODO mute derived objects
+                break;
+            case ObjectType.OPERATION_MISSION_RELATION:
+                if (getMissionInternal(rightId) == null || getOperationInternal(leftId) == null){
+                    throw new IllegalStateException("Cannot assign relation between operation and mission, object(s) do not exist");
+                }
+                if (createOp == null){
+                    createOp = new datamodel.operations.Operation(
+                            this.client_id,
+                            new MVRUpdateContents(attribute, rightId),
+                            null,
+                            OperationType.MVR_SET,
+                            isCascading
+                    );
+                }
+                processOperation(createOp, ObjectType.OPERATION_MISSION_RELATION, leftId, externalOp != null);
+                // TODO mute derived objects
+                break;
+            case ObjectType.UNIT_MISSION_RELATION:
+                if (getMissionInternal(rightId) == null || getUnitInternal(leftId) == null){
+                    throw new IllegalStateException("Cannot assign relation between operation and mission, object(s) do not exist");
+                }
+                if (createOp == null){
+                    createOp = new datamodel.operations.Operation(
+                            this.client_id,
+                            new MVRUpdateContents(attribute, rightId),
+                            null,
+                            OperationType.MVR_SET,
+                            isCascading
+                    );
+                }
+                processOperation(createOp, ObjectType.UNIT_MISSION_RELATION, leftId, externalOp != null);
+                // TODO mute derived objects
+                break;
+        }
+
+    }
+
+
+    private void unassignRelation(int objectType, String leftId, String rightId, String attribute, boolean isCascading, datamodel.operations.Operation externalOp){
+        datamodel.operations.Operation removeOp = externalOp;
+        switch (objectType){
+            case ObjectType.OPERATION_UNIT_RELATION:
+                if (getUnitInternal(rightId) == null || getOperationInternal(leftId) == null){
+                    throw new IllegalStateException("Cannot assign relation between operation and unit, object(s) do not exist");
+                }
+                if (removeOp == null){
+                    removeOp = new datamodel.operations.Operation(
+                            this.client_id,
+                            new MVRUpdateContents(attribute, rightId),
+                            null,
+                            OperationType.MVR_REMOVE,
+                            isCascading
+                    );
+                }
+                processOperation(removeOp, ObjectType.OPERATION_UNIT_RELATION, leftId, externalOp != null);
+                // TODO mute derived objects
+                break;
+            case ObjectType.OPERATION_MISSION_RELATION:
+                if (getMissionInternal(rightId) == null || getOperationInternal(leftId) == null){
+                    throw new IllegalStateException("Cannot assign relation between operation and mission, object(s) do not exist");
+                }
+                if (removeOp == null){
+                    removeOp = new datamodel.operations.Operation(
+                            this.client_id,
+                            new MVRUpdateContents(attribute, rightId),
+                            null,
+                            OperationType.MVR_REMOVE,
+                            isCascading
+                    );
+                }
+                processOperation(removeOp, ObjectType.OPERATION_MISSION_RELATION, leftId, externalOp != null);
+                // TODO mute derived objects
+                break;
+            case ObjectType.UNIT_MISSION_RELATION:
+                if (getMissionInternal(rightId) == null || getUnitInternal(leftId) == null){
+                    throw new IllegalStateException("Cannot assign relation between operation and mission, object(s) do not exist");
+                }
+                if (removeOp == null){
+                    removeOp = new datamodel.operations.Operation(
+                            this.client_id,
+                            new MVRUpdateContents(attribute, rightId),
+                            null,
+                            OperationType.MVR_REMOVE,
+                            isCascading
+                    );
+                }
+                processOperation(removeOp, ObjectType.UNIT_MISSION_RELATION, leftId, externalOp != null);
+                // TODO mute derived objects
+                break;
+        }
+    }
+
+
+    private void handleCascadingRelationOperation(int relationType, String objectId, int objectType, boolean add_op){
+        switch (relationType){
+            case ObjectType.OPERATION_MISSION_RELATION:
+                if (objectType == ObjectType.OPERATION){
+                    handleLeftCascadingRelationOperation(objectId, relationType, add_op);
+                } else {
+                    handleRightCascadingRelationOperation(objectId, relationType, add_op);
+                }
+            case ObjectType.OPERATION_UNIT_RELATION:
+                if (objectType == ObjectType.OPERATION){
+                    handleLeftCascadingRelationOperation(objectId, relationType, add_op);
+                } else {
+                    handleRightCascadingRelationOperation(objectId, relationType, add_op);
+                }
+            case ObjectType.UNIT_MISSION_RELATION:
+                if (objectType == ObjectType.UNIT){
+                    handleLeftCascadingRelationOperation(objectId, relationType, add_op);
+                } else {
+                    handleRightCascadingRelationOperation(objectId, relationType, add_op);
+                }
+        }
+
+    }
+
+    // proof of concept expensive way of handling cascading relationship cascading, could be replaced by implementing correctly
+    // mutated internal structures for objects and their relations allowing us to simply look up the relations to be deleted
+    // rather than having to iterate across relations
+    private void handleLeftCascadingRelationOperation(String objectId, int relationType, boolean add_op){
+        Map<String, MVR> map;
+        switch (relationType){
+            case ObjectType.OPERATION_UNIT_RELATION:
+                map = this.operationUnitRelations;
+                break;
+            case ObjectType.OPERATION_MISSION_RELATION:
+                map = this.operationMissionRelations;
+                break;
+            case ObjectType.UNIT_MISSION_RELATION:
+                map = this.unitMissionRelations;
+                break;
+            default:
+                throw new IllegalStateException("Something went wrong processing cascading ops for object w/ id : " + objectId);
+        }
+
+        Map<String, ORSet> state;
+        for (String id : map.keySet()){
+            if (id.equals(objectId)){
+                state = map.get(id).getStateContents();
+                for (String attr : state.keySet()){
+                    for (String rightId : state.get(attr).getStateContents()){
+                        if (add_op){
+                            assignRelation(relationType, objectId, rightId, attr, true, null);
+                        } else {
+                            unassignRelation(relationType, objectId, rightId, attr, true, null);
+                        }
+                    }
+                }
+            }
+            break;
+        }
+    }
+    private void handleRightCascadingRelationOperation(String objectId, int relationType, boolean add_op){
+        Map<String, MVR> map;
+        switch (relationType){
+            case ObjectType.OPERATION_UNIT_RELATION:
+                map = this.operationUnitRelations;
+                break;
+            case ObjectType.OPERATION_MISSION_RELATION:
+                map = this.operationMissionRelations;
+                break;
+            case ObjectType.UNIT_MISSION_RELATION:
+                map = this.unitMissionRelations;
+                break;
+            default:
+                throw new IllegalStateException("Something went wrong processing cascading ops for object w/ id : " + objectId);
+        }
+
+        Map<String, ORSet> state;
+        for (String id : map.keySet()){
+            if (id.equals(objectId)){
+                state = map.get(id).getStateContents();
+                for (String attr : state.keySet()){
+                    for (String rightId : state.get(attr).getStateContents()){
+                        if (rightId.equals(objectId)){
+                            if (add_op){
+                                assignRelation(relationType, objectId, rightId, attr, true, null);
+                            } else {
+                                unassignRelation(relationType, objectId, rightId, attr, true, null);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
 
 
     // Operation-Unit
@@ -567,8 +673,7 @@ public class ObjectStorage {
             throw new IllegalStateException("Cannot remove relation between operation and unit, object(s) do not exist");
         }
 
-        // TODO handle cascading removes, on relation UnitMission
-
+        handleCascadingRelationOperation(ObjectType.UNIT_MISSION_RELATION, unit.getId(), ObjectType.UNIT, false);
 
         unassignRelation(ObjectType.OPERATION_UNIT_RELATION, operation.getId(), unit.getId(), callsign, isCascading, null);
     }
@@ -585,7 +690,7 @@ public class ObjectStorage {
             name = "unassigned";
         }
 
-        // cascading add to ensure relation objects exists
+        // cascading add to ensure relation objects exists TODO mby not if isCascading
         addOperation(operation.getId(), true);
         addMission(mission.getId(), true);
 
@@ -612,7 +717,7 @@ public class ObjectStorage {
         }
 
         if (name == null){
-            name = "unassigned";
+            name = "N/A";
         }
 
         // cascading add to ensure relation objects exists
@@ -624,7 +729,7 @@ public class ObjectStorage {
         assignRelation(ObjectType.UNIT_MISSION_RELATION, unit.getId(), mission.getId(), name, isCascading, null);
     }
 
-    public void removeOperationMission(Unit unit, Mission mission, String name, boolean isCascading){
+    public void removeUnitMission(Unit unit, Mission mission, String name, boolean isCascading){
         if (getMissionInternal(mission.getId()) == null || getUnitInternal(unit.getId()) == null){
             throw new IllegalStateException("Cannot remove relation between unit and mission, object(s) do not exist");
         }

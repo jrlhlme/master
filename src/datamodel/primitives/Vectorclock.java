@@ -84,7 +84,7 @@ public class Vectorclock {
         return false;
     }
 
-    // TODO much room for optimization here
+    // much room for optimization here
     public boolean isMatching(Vectorclock compareVectorClock){
         if (compareVectorClock.v_clck.keySet().equals(this.v_clck.keySet())){ // prob. doesn't work
             for (Integer key : this.v_clck.keySet()){

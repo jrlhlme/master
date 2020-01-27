@@ -26,10 +26,17 @@ public class Main {
 
         db.assignOperationUnit(db.getOperation("1-1"), db.getUnit("1-2"), "22B", false);
 
+        db.createMission();
+        db.assignOperationMission(db.getOperation("1-1"), db.getMission("1-3"), "", false);
+        db.assignUnitMission(db.getUnit("1-2"), db.getMission("1-3"), "", false);
+        db.removeUnitFromOperation(db.getOperation("1-1"), db.getUnit("1-2"), "22B", false);
+
+
         db2.processExternalOperation(db.getExportOperation());
         db2.processExternalOperation(db.getExportOperation());
         db2.processExternalOperation(db.getExportOperation());
         db2.processExternalOperation(db.getExportOperation());
+
 
 
         int i = 0;

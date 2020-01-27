@@ -10,11 +10,6 @@ public class Unit {
 
     private String id;
 
-    // updated as a result of altering the callsign mapping in the Operation-Unit relation
-    // locally maintained, TODO
-    private String callsign;
-
-
     public Unit(String id){
         this.id = id;
     }
@@ -23,12 +18,5 @@ public class Unit {
         return id;
     }
 
-    public String getCallsign() {
-        return callsign;
-    }
-
-    public void setCallsign(String callsign) {
-        this.callsign = callsign;
-    }
 
 }

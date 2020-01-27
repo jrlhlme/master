@@ -79,6 +79,7 @@ public class MVR implements DataType {
                         OperationType.ORSET_REMOVE,
                         operation.isCascadingOp()
                 );
+                targetSet.processOperation(OROperation);
                 OROperations.add(OROperation);
         }
 
@@ -111,6 +112,12 @@ public class MVR implements DataType {
             }
         }
         return true;
+    }
+
+
+
+    public Map<String, ORSet> getStateContents(){
+        return this.entries;
     }
 
 
