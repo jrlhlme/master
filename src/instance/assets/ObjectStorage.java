@@ -82,10 +82,11 @@ public class ObjectStorage {
                         operationWrapper.getOperation().isCascadingOp(), operationWrapper.getOperation());
                 break;
             case OperationType.MVR_SET:
-            case OperationType.MVR_CLEAR:
+            case OperationType.MVR_REMOVE:
                 MVRUpdateContents mvrUpdateContents = (MVRUpdateContents)operationWrapper.getOperation().getOperationContents();
-                assignRelation(operationWrapper.getTargetObjectType(), operationWrapper.getTargetId(), mvrUpdateContents.getKey(),
-                        mvrUpdateContents.getValue(), operationWrapper.getOperation().isCascadingOp(), operationWrapper.getOperation());
+                assignRelation(operationWrapper.getTargetObjectType(), operationWrapper.getTargetId(),
+                        mvrUpdateContents.getValue(), mvrUpdateContents.getKey(), operationWrapper.getOperation().isCascadingOp(), operationWrapper.getOperation());
+                break;
         }
     }
 
@@ -133,6 +134,7 @@ public class ObjectStorage {
                         break;
 
                 }
+                break;
             case OperationType.MVR_REMOVE:
                 switch (targetObjectType){
                     case ObjectType.OPERATION_UNIT_RELATION:
@@ -337,7 +339,7 @@ public class ObjectStorage {
 
 
 
-    public void addOperation(String id, boolean isCascading){
+    private void addOperation(String id, boolean isCascading){
 
         // TODO cascade on relations
 
@@ -379,7 +381,7 @@ public class ObjectStorage {
 
 
 
-    public void addUnit(String id, boolean isCascading){
+    private void addUnit(String id, boolean isCascading){
 
         // TODO cascade on relations
 
@@ -421,7 +423,7 @@ public class ObjectStorage {
 
 
 
-    public void addMission(String id, boolean isCascading){
+    private void addMission(String id, boolean isCascading){
 
         // TODO cascade on relations
 
@@ -552,6 +554,10 @@ public class ObjectStorage {
     }
 
 
+
+    // proof of concept expensive way of handling cascading relationship cascading, could be replaced by implementing correctly
+    // mutated internal structures for objects and their relations allowing us to simply look up the relations to be deleted
+    // rather than having to iterate across relations
     private void handleCascadingRelationOperation(int relationType, String objectId, int objectType, boolean add_op){
         switch (relationType){
             case ObjectType.OPERATION_MISSION_RELATION:
@@ -575,10 +581,6 @@ public class ObjectStorage {
         }
 
     }
-
-    // proof of concept expensive way of handling cascading relationship cascading, could be replaced by implementing correctly
-    // mutated internal structures for objects and their relations allowing us to simply look up the relations to be deleted
-    // rather than having to iterate across relations
     private void handleLeftCascadingRelationOperation(String objectId, int relationType, boolean add_op){
         Map<String, MVR> map;
         switch (relationType){
@@ -651,8 +653,9 @@ public class ObjectStorage {
 
 
 
+
     // Operation-Unit
-    public void assignOperationUnit(Operation operation, Unit unit, String callsign, boolean isCascading){
+    private void assignOperationUnit(Operation operation, Unit unit, String callsign, boolean isCascading){
         if (getUnitInternal(unit.getId()) == null || getOperationInternal(operation.getId()) == null){
             throw new IllegalStateException("Cannot assign relation between operation and unit, object(s) do not exist");
         }
@@ -661,27 +664,39 @@ public class ObjectStorage {
             callsign = "unassigned";
         }
 
-        // cascading add to ensure relation objects exists
-        addOperation(operation.getId(), true);
-        addUnit(unit.getId(), true);
+        if (!isCascading) {
+            // cascading add to ensure relation objects exists
+            addOperation(operation.getId(), true);
+            addUnit(unit.getId(), true);
+
+            // TODO cascading on unit-mission
+        }
 
         assignRelation(ObjectType.OPERATION_UNIT_RELATION, operation.getId(), unit.getId(), callsign, isCascading, null);
     }
+    public void assignOperationUnit(Operation operation, Unit unit, String callsign){
+        assignOperationUnit(operation, unit, callsign, false);
+    }
 
-    public void removeUnitFromOperation(Operation operation, Unit unit, String callsign, boolean isCascading){
+    private void removeUnitFromOperation(Operation operation, Unit unit, String callsign, boolean isCascading){
         if (getUnitInternal(unit.getId()) == null || getOperationInternal(operation.getId()) == null){
             throw new IllegalStateException("Cannot remove relation between operation and unit, object(s) do not exist");
         }
 
-        handleCascadingRelationOperation(ObjectType.UNIT_MISSION_RELATION, unit.getId(), ObjectType.UNIT, false);
+        if (!isCascading) {
+            handleCascadingRelationOperation(ObjectType.UNIT_MISSION_RELATION, unit.getId(), ObjectType.UNIT, false);
+        }
 
         unassignRelation(ObjectType.OPERATION_UNIT_RELATION, operation.getId(), unit.getId(), callsign, isCascading, null);
+    }
+    public void removeUnitFromOperation(Operation operation, Unit unit, String callsign){
+        removeUnitFromOperation(operation, unit, callsign, false);
     }
 
 
 
     // Operation-Mission
-    public void assignOperationMission(Operation operation, Mission mission, String name, boolean isCascading){
+    private void assignOperationMission(Operation operation, Mission mission, String name, boolean isCascading){
         if (getMissionInternal(mission.getId()) == null || getOperationInternal(operation.getId()) == null){
             throw new IllegalStateException("Cannot assign relation between operation and mission, object(s) do not exist");
         }
@@ -690,28 +705,37 @@ public class ObjectStorage {
             name = "unassigned";
         }
 
-        // cascading add to ensure relation objects exists TODO mby not if isCascading
-        addOperation(operation.getId(), true);
-        addMission(mission.getId(), true);
+        // cascading add to ensure relation objects exists
+        if (!isCascading) {
+            addOperation(operation.getId(), true);
+            addMission(mission.getId(), true);
+        }
 
         assignRelation(ObjectType.OPERATION_MISSION_RELATION, operation.getId(), mission.getId(), name, isCascading, null);
     }
+    public void assignOperationMission(Operation operation, Mission mission, String name){
+        assignOperationMission(operation, mission, name, false);
+    }
 
-    public void removeOperationMission(Operation operation, Mission mission, String name, boolean isCascading){
+    private void removeOperationMission(Operation operation, Mission mission, String name, boolean isCascading){
         if (getMissionInternal(mission.getId()) == null || getOperationInternal(operation.getId()) == null){
             throw new IllegalStateException("Cannot remove relation between operation and mission, object(s) do not exist");
         }
 
-        // TODO handle cascading removes, on relation UnitMission
-
+        if (!isCascading){
+            handleCascadingRelationOperation(ObjectType.UNIT_MISSION_RELATION, mission.getId(), ObjectType.MISSION, false);
+        }
 
         unassignRelation(ObjectType.OPERATION_MISSION_RELATION, operation.getId(), mission.getId(), name, isCascading, null);
+    }
+    public void removeOperationMission(Operation operation, Mission mission, String name){
+        removeOperationMission(operation, mission, name, false);
     }
 
 
 
     // Unit-Mission
-    public void assignUnitMission(Unit unit, Mission mission, String name, boolean isCascading){
+    private void assignUnitMission(Unit unit, Mission mission, String name, boolean isCascading){
         if (getMissionInternal(mission.getId()) == null || getUnitInternal(unit.getId()) == null){
             throw new IllegalStateException("Cannot assign relation between unit and mission, object(s) do not exist");
         }
@@ -721,25 +745,30 @@ public class ObjectStorage {
         }
 
         // cascading add to ensure relation objects exists
-        addUnit(unit.getId(), true);
-        addMission(mission.getId(), true);
+        if (!isCascading) {
+            addUnit(unit.getId(), true);
+            addMission(mission.getId(), true);
 
-        // TODO handle cascading add, on relation unitoperation
+            handleCascadingRelationOperation(ObjectType.OPERATION_UNIT_RELATION, unit.getId(), ObjectType.UNIT, true);
+        }
+
 
         assignRelation(ObjectType.UNIT_MISSION_RELATION, unit.getId(), mission.getId(), name, isCascading, null);
     }
+    public void assignUnitMission(Unit unit, Mission mission, String name){
+        assignUnitMission(unit, mission, name, false);
+    }
 
-    public void removeUnitMission(Unit unit, Mission mission, String name, boolean isCascading){
+    private void removeUnitMission(Unit unit, Mission mission, String name, boolean isCascading){
         if (getMissionInternal(mission.getId()) == null || getUnitInternal(unit.getId()) == null){
             throw new IllegalStateException("Cannot remove relation between unit and mission, object(s) do not exist");
         }
 
-        // TODO handle cascading removes, on relation UnitMission
-
-
         unassignRelation(ObjectType.UNIT_MISSION_RELATION, unit.getId(), mission.getId(), name, isCascading, null);
     }
-
+    public void removeUnitMission(Unit unit, Mission mission, String name){
+        removeUnitMission(unit, mission, name, false);
+    }
 
 
 

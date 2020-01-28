@@ -1,6 +1,13 @@
+import datamodel.operations.Operation;
+import datamodel.operations.wrappers.ExportOperation;
 import instance.assets.ObjectStorage;
 
 public class Main {
+
+    public static void syncDBs(ObjectStorage db1, ObjectStorage db2){
+        performOpsFromForeignDB(db1, db2);
+        performOpsFromForeignDB(db2, db1);
+    }
 
 
     public static void main(String[] args) {
@@ -11,33 +18,30 @@ public class Main {
 
         ObjectStorage db = new ObjectStorage(client_id_1);
         db.createOperation();
-        db.addOperation("1-1", false);
-//        db.createUnit();
-//        db.createMission();
+//        db.addOperation("1-1", false);
 
         ObjectStorage db2 = new ObjectStorage(client_id_2);
-        db2.processExternalOperation(db.getExportOperation());
-        db2.removeOperation("1-1");
-
-        db.processExternalOperation(db2.getExportOperation());
-        db2.processExternalOperation(db.getExportOperation());
+        syncDBs(db, db2);
 
         db.createUnit();
+        syncDBs(db, db2);
 
-        db.assignOperationUnit(db.getOperation("1-1"), db.getUnit("1-2"), "22B", false);
+
+        db.assignOperationUnit(db.getOperation("1-1"), db.getUnit("1-2"), "22B");
+        syncDBs(db, db2);
+
+        db.assignOperationUnit(db.getOperation("1-1"), db.getUnit("1-2"), "22B");
+        db2.removeUnitFromOperation(db.getOperation("1-1"), db.getUnit("1-2"), "22B");
+        syncDBs(db, db2);
 
         db.createMission();
-        db.assignOperationMission(db.getOperation("1-1"), db.getMission("1-3"), "", false);
-        db.assignUnitMission(db.getUnit("1-2"), db.getMission("1-3"), "", false);
-        db.removeUnitFromOperation(db.getOperation("1-1"), db.getUnit("1-2"), "22B", false);
+        db.assignOperationMission(db.getOperation("1-1"), db.getMission("1-3"), "Mission 1");
+        db.assignUnitMission(db.getUnit("1-2"), db.getMission("1-3"), "Mission 1");
+        syncDBs(db, db2);
 
-
-        db2.processExternalOperation(db.getExportOperation());
-        db2.processExternalOperation(db.getExportOperation());
-        db2.processExternalOperation(db.getExportOperation());
-        db2.processExternalOperation(db.getExportOperation());
-
-
+        db.removeUnitFromOperation(db.getOperation("1-1"), db.getUnit("1-2"), "22B");
+        db2.assignOperationUnit(db.getOperation("1-1"), db.getUnit("1-2"), "22B");
+        syncDBs(db, db2);
 
         int i = 0;
 
@@ -134,5 +138,17 @@ public class Main {
 //        int i = 0;
 
     }
+
+
+    public static void performOpsFromForeignDB(ObjectStorage local, ObjectStorage foreign){
+        ExportOperation operation = foreign.getExportOperation();
+        while(operation != null){
+            local.processExternalOperation(operation);
+            operation = foreign.getExportOperation();
+        }
+    }
+
+
+
 }
 

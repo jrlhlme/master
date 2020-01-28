@@ -29,11 +29,11 @@ public class ORSet implements DataType {
         this.entries = new HashMap<>();
     }
 
-    public boolean processOperation(Operation operation){ //TODO before call check if op is already performed
+    public boolean processOperation(Operation operation){
         switch (operation.getOperationType()){
             case OperationType.ORSET_ADD: return addEntry(operation);
             case OperationType.ORSET_REMOVE: return deleteEntry(operation);
-            default: return false; //TODO handle
+            default: return false;
         }
     }
 
@@ -72,7 +72,6 @@ public class ORSet implements DataType {
         ORUpdateContents operationContents = (ORUpdateContents)operation.getOperationContents();
         Tree opTree = getTreeForOperation(operationContents.getId());
         if (opTree == null){
-            // TODO goof has happened, handle
             return false;
         }
 
