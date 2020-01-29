@@ -549,23 +549,20 @@ public class ObjectStorage {
     private void handleCascadingRelationOperation(int relationType, String objectId, int objectType, boolean add_op){
         switch (relationType){
             case ObjectType.OPERATION_MISSION_RELATION:
-                if (objectType == ObjectType.OPERATION){
-                    handleLeftCascadingRelationOperation(objectId, relationType, add_op);
-                } else {
-                    handleRightCascadingRelationOperation(objectId, relationType, add_op);
-                }
             case ObjectType.OPERATION_UNIT_RELATION:
                 if (objectType == ObjectType.OPERATION){
                     handleLeftCascadingRelationOperation(objectId, relationType, add_op);
                 } else {
                     handleRightCascadingRelationOperation(objectId, relationType, add_op);
                 }
+                break;
             case ObjectType.UNIT_MISSION_RELATION:
                 if (objectType == ObjectType.UNIT){
                     handleLeftCascadingRelationOperation(objectId, relationType, add_op);
                 } else {
                     handleRightCascadingRelationOperation(objectId, relationType, add_op);
                 }
+                break;
         }
 
     }
@@ -620,21 +617,21 @@ public class ObjectStorage {
 
         Map<String, ORSet> state;
         for (String id : map.keySet()){
-            if (id.equals(objectId)){
+//            if (id.equals(objectId)){
                 state = map.get(id).getStateContents();
                 for (String attr : state.keySet()){
                     for (String rightId : state.get(attr).getStateContents()){
                         if (rightId.equals(objectId)){
                             if (add_op){
-                                assignRelation(relationType, objectId, rightId, attr, true, null);
+                                assignRelation(relationType, id, rightId, attr, true, null);
                             } else {
-                                unassignRelation(relationType, objectId, rightId, attr, true, null);
+                                unassignRelation(relationType, id, rightId, attr, true, null);
                             }
                             break;
                         }
                     }
                 }
-            }
+//            }
         }
     }
 
@@ -742,6 +739,48 @@ public class ObjectStorage {
         removeUnitMissionInternal(unit, mission, name, false);
     }
 
+
+
+    @Override
+    public String toString(){
+        String returnString = "**OUTPUT FOR DB FOR CLIENT " + this.client_id + "**\n";
+        if (!operations.getStateContents().isEmpty()){
+            returnString += ("Operations : " + operations.getStateContents().toString() + "\n");
+        }
+        if (!units.getStateContents().isEmpty()){
+            returnString += ("Units : " + units.getStateContents().toString() + "\n");
+        }
+        if (!missions.getStateContents().isEmpty()){
+            returnString += ("Missions : " + missions.getStateContents().toString() + "\n");
+        }
+
+        for (String operation : operationMissionRelations.keySet()){
+            returnString += ("Operation " + operation + " is related to the following missions : \n");
+            for (String name : operationMissionRelations.get(operation).getStateContents().keySet()){
+                if (!operationMissionRelations.get(operation).getStateContents().get(name).getStateContents().isEmpty()) {
+                    returnString += (operationMissionRelations.get(operation).getStateContents().get(name).getStateContents().toString() + " (with name : " + name + ")\n");
+                }
+            }
+        }
+        for (String operation : operationUnitRelations.keySet()){
+            returnString += ("Operation " + operation + " is related to the following units : \n");
+            for (String name : operationUnitRelations.get(operation).getStateContents().keySet()){
+                if (!operationUnitRelations.get(operation).getStateContents().get(name).getStateContents().isEmpty()) {
+                    returnString += (operationUnitRelations.get(operation).getStateContents().get(name).getStateContents().toString() + " (with name : " + name + ")\n");
+                }
+            }
+        }
+        for (String unit : unitMissionRelations.keySet()){
+            returnString += ("Unit " + unit + " is related to the following missions : \n");
+            for (String name : unitMissionRelations.get(unit).getStateContents().keySet()){
+                if (!unitMissionRelations.get(unit).getStateContents().get(name).getStateContents().isEmpty()) {
+                    returnString += (unitMissionRelations.get(unit).getStateContents().get(name).getStateContents().toString() + " (with name : " + name + ")\n");
+                }
+            }
+        }
+        returnString += "**********";
+        return returnString;
+    }
 
 
 }

@@ -18,7 +18,6 @@ public class Main {
 
         ObjectStorage db = new ObjectStorage(client_id_1);
         db.createOperation();
-//        db.addOperation("1-1", false);
 
         ObjectStorage db2 = new ObjectStorage(client_id_2);
         syncDBs(db, db2);
