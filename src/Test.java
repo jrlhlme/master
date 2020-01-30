@@ -21,7 +21,7 @@ public class Test {
         print(db_client1.toString());
         print(db_client2.toString());
 
-        db_client1.removeUnitFromOperation(db_client1.getOperation("1-1"), db_client1.getUnit("1-2"), "21");
+        db_client1.removeOperationUnit(db_client1.getOperation("1-1"), db_client1.getUnit("1-2"), "21");
         db_client2.assignUnitMission(db_client2.getUnit("1-2"), db_client2.getMission("1-3"), "Mission 1");
         print("# expected outcome : client_1 should have removed all its relations while client_2 has relations between operation 1-1 and unit 1-2");
         print(db_client1.toString());
@@ -47,7 +47,7 @@ public class Test {
         db_client1.assignOperationMission(db_client1.getOperation("1-1"), db_client1.getMission("1-3"), "Mission 1");
         syncDBs(db_client1, db_client2);
 
-        db_client1.removeUnitFromOperation(db_client1.getOperation("1-1"), db_client1.getUnit("1-2"), "21");
+        db_client1.removeOperationUnit(db_client1.getOperation("1-1"), db_client1.getUnit("1-2"), "21");
         db_client1.removeOperationMission(db_client1.getOperation("1-1"), db_client1.getMission("1-3"), "Mission 1");
         db_client2.assignUnitMission(db_client2.getUnit("1-2"), db_client2.getMission("1-3"), "1st mission");
         print("# expected outcome : client_1 should have removed all its relations while client_2 has relations between operation 1-1 and unit 1-2 and mission 1-3");
@@ -77,7 +77,7 @@ public class Test {
         db_client1.assignUnitMission(db_client1.getUnit("1-2"), db_client1.getMission("1-3"), "1st mission");
         syncDBs(db_client1, db_client2);
 
-        db_client1.removeUnitFromOperation(db_client1.getOperation("1-1"), db_client1.getUnit("1-2"), "21");
+        db_client1.removeOperationUnit(db_client1.getOperation("1-1"), db_client1.getUnit("1-2"), "21");
         db_client2.assignOperationMission(db_client2.getOperation("1-1"), db_client2.getMission("1-4"), "Mission 2");
         db_client2.assignUnitMission(db_client2.getUnit("1-2"), db_client2.getMission("1-4"), "2nd mission");
         print("# expected outcome : client_1 should have no unit-mission or operation-unit relations, client_2 should keep unit 1-2 related to operation 1-1 with two assigned missions (1-3, 1-4)");

@@ -1,4 +1,3 @@
-import datamodel.operations.Operation;
 import datamodel.operations.wrappers.ExportOperation;
 import instance.assets.ObjectStorage;
 
@@ -30,7 +29,7 @@ public class Main {
         syncDBs(db, db2);
 
         db.assignOperationUnit(db.getOperation("1-1"), db.getUnit("1-2"), "22B");
-        db2.removeUnitFromOperation(db.getOperation("1-1"), db.getUnit("1-2"), "22B");
+        db2.removeOperationUnit(db.getOperation("1-1"), db.getUnit("1-2"), "22B");
         syncDBs(db, db2);
 
         db.createMission();
@@ -38,7 +37,7 @@ public class Main {
         db.assignUnitMission(db.getUnit("1-2"), db.getMission("1-3"), "Mission 1");
         syncDBs(db, db2);
 
-        db.removeUnitFromOperation(db.getOperation("1-1"), db.getUnit("1-2"), "22B");
+        db.removeOperationUnit(db.getOperation("1-1"), db.getUnit("1-2"), "22B");
         db2.assignOperationUnit(db.getOperation("1-1"), db.getUnit("1-2"), "22B");
         syncDBs(db, db2);
 

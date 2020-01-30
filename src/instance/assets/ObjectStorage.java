@@ -666,7 +666,7 @@ public class ObjectStorage {
 
         unassignRelation(ObjectType.OPERATION_UNIT_RELATION, operation.getId(), unit.getId(), callsign, isCascading, null);
     }
-    public void removeUnitFromOperation(Operation operation, Unit unit, String callsign){
+    public void removeOperationUnit(Operation operation, Unit unit, String callsign){
         removeUnitFromOperationInternal(operation, unit, callsign, false);
     }
 
