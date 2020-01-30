@@ -432,7 +432,7 @@ public class ObjectStorage {
      */
 
     private void assignRelation(int objectType, String leftId, String rightId, String attribute, boolean isCascading, datamodel.operations.Operation externalOp){
-        datamodel.operations.Operation createOp = externalOp; // TODO this works?
+        datamodel.operations.Operation createOp = externalOp;
         switch (objectType){
             case ObjectType.OPERATION_UNIT_RELATION:
                 if (externalOp == null && (getUnitInternal(rightId) == null || getOperationInternal(leftId) == null)){

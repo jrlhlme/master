@@ -75,15 +75,6 @@ public class Vectorclock {
 
 
 
-
-    public boolean isDominatedBy(Vectorclock compareVectorClock){
-        // TODO checks if the provided v_clck dominates (is after)
-
-
-
-        return false;
-    }
-
     // much room for optimization here
     public boolean isMatching(Vectorclock compareVectorClock){
         if (compareVectorClock.v_clck.keySet().equals(this.v_clck.keySet())){ // prob. doesn't work
@@ -120,17 +111,6 @@ public class Vectorclock {
         return false;
     }
 
-
-    /**
-     * checks if provided vector clock represents an operation that can be performed (must increment at most a single entry by at most 1)
-     * @param compareVectorClock
-     * @return
-     */
-    public boolean opCanBePerformed(Vectorclock compareVectorClock){
-        // TODO keyset of comparevector must be equal or exactly one greater, each entry must be lower or equal AND one entry must be one greater
-
-        return false;
-    }
 
 
     private boolean keysetMatches(Set<Integer> foreignKeySet){
