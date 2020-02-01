@@ -31,7 +31,6 @@ public class Tree { // TODO purge contents of node if is dominated cascading op 
 
         this.leaflist = new ArrayList<>();
 
-        //TODO verify that createNode is sufficient for local and foreign ops
         op.setPreceding_operations_vectorclocks(Collections.singletonList(this.treestate.clone()));
         this.createNode(op);
         this.updateTreeState();

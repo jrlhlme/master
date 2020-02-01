@@ -15,15 +15,15 @@ public class Test {
         db_client1.createOperation();
         db_client1.createUnit();
         db_client1.createMission();
-        db_client1.assignOperationUnit(db_client1.getOperation("1-1"), db_client1.getUnit("1-2"), "21");
         syncDBs(db_client1, db_client2);
         print("expected outcome : identical");
         print(db_client1.toString());
         print(db_client2.toString());
 
+        db_client1.assignOperationUnit(db_client1.getOperation("1-1"), db_client1.getUnit("1-2"), "21");
         db_client1.removeOperationUnit(db_client1.getOperation("1-1"), db_client1.getUnit("1-2"), "21");
-        db_client2.assignUnitMission(db_client2.getUnit("1-2"), db_client2.getMission("1-3"), "Mission 1");
-        print("# expected outcome : client_1 should have removed all its relations while client_2 has relations between operation 1-1 and unit 1-2");
+        db_client2.assignOperationUnit(db_client2.getOperation("1-1"), db_client2.getUnit("1-2"), "21");
+        print("# expected outcome : client_1 should have no relations while client_2 has relations between operation 1-1 and unit 1-2");
         print(db_client1.toString());
         print(db_client2.toString());
 
