@@ -10,11 +10,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * Created by Jarl on 09-Dec-19.
  */
-public class Tree { // TODO purge contents of node if is dominated cascading op as garbage collection
+public class Tree {
 
     private TreeNode root;
 
-//    private Map<Integer, TreeNode> leaflist;
     private List<TreeNode> leaflist;
 
     // represent aggregate state of instance the tree governs, updated on operations
@@ -48,7 +47,6 @@ public class Tree { // TODO purge contents of node if is dominated cascading op 
     public OperationResolveObject createNode(Operation op){
         TreeNode newNode = new TreeNode(op, this, this.leaflist.isEmpty() ? Collections.singletonList(this.root) : this.leaflist,
                 this.treestate.incrementFrom(op.getClientId()));
-//                op.getVectorClock());
 
         //update leaves w/ new children
         List<Vectorclock> precedingOps = new ArrayList<>();
